@@ -1,772 +1,718 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FamilyDoc - Trợ lý y tế</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
-  <style>
-    :root {
-      --primary: #0f4c9c;
-      --primary-hover: #0c3e80;
-      --primary-light: #e6effa;
-      --secondary: #6bf1e3;
-      --bg-sidebar: #f5f6f8;
-      --bg-main: #ffffff;
-      --text-main: #1f2937;
-      --text-muted: #6b7280;
-      --border-color: #e5e7eb;
-      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: var(--bg-main);
-      color: var(--text-main);
-      -webkit-font-smoothing: antialiased;
-      overflow: hidden; /* Prevent body scroll */
-    }
-
-    /* Layout */
-    .app-container {
-      display: flex;
-      height: 100vh;
-      width: 100vw;
-      overflow: hidden;
-    }
-
-    .sidebar {
-      width: 280px;
-      background-color: var(--bg-sidebar);
-      border-right: 1px solid var(--border-color);
-      display: flex;
-      flex-direction: column;
-      padding: 32px 0;
-      flex-shrink: 0;
-    }
-
-    .main-content {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background-color: var(--bg-main);
-      height: 100vh;
-    }
-
-    .top-header {
-      height: 72px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 40px;
-      border-bottom: 1px solid var(--border-color);
-      background-color: white;
-      flex-shrink: 0;
-    }
-
-    .content-area {
-      flex: 1;
-      overflow-y: auto;
-      padding: 40px;
-      scroll-behavior: smooth;
-    }
-
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 8px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-    /* Sidebar Items */
-    .sidebar-logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 0 32px;
-      margin-bottom: 40px;
-      font-size: 24px;
-      font-weight: 700;
-      color: var(--primary);
-    }
-
-    .user-profile {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 0 32px;
-      margin-bottom: 40px;
-    }
-    .user-profile img {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      object-fit: cover;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-
-    .nav-menu { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-    .nav-item {
-      padding: 14px 24px;
-      margin: 0 16px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      color: var(--text-muted);
-      text-decoration: none;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: var(--transition);
-    }
-    
-    .nav-item:hover { background-color: #e2e8f0; color: var(--text-main); }
-    .nav-item.active { background-color: var(--primary); color: white; box-shadow: 0 4px 12px rgba(15, 76, 156, 0.2); }
-    .nav-item.active-cyan { background-color: #a5f3fc; color: #0891b2; box-shadow: 0 4px 12px rgba(165, 243, 252, 0.4); }
-
-    .emergency-btn {
-      margin: 32px 24px;
-      background-color: #fee2e2;
-      color: #dc2626;
-      border-radius: 12px;
-      padding: 16px;
-      text-align: center;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      cursor: pointer;
-      transition: var(--transition);
-    }
-    .emergency-btn:hover { background-color: #fecaca; transform: translateY(-2px); }
-
-    /* Page Sections */
-    .page { display: none; animation: fadeIn 0.4s ease forwards; }
-    .page.active { display: block; }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Common Components */
-    .card {
-      background: white;
-      border: 1px solid var(--border-color);
-      border-radius: 20px;
-      padding: 24px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.02);
-      transition: var(--transition);
-    }
-    .card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.05); }
-
-    .btn {
-      padding: 12px 24px;
-      border-radius: 12px;
-      border: none;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 14px;
-      transition: var(--transition);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-    .btn-primary { background-color: var(--primary); color: white; }
-    .btn-primary:hover { background-color: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(15, 76, 156, 0.2); }
-    .btn-outline { background-color: transparent; border: 2px solid var(--primary); color: var(--primary); }
-    .btn-outline:hover { background-color: var(--primary-light); }
-
-    /* Home Specifics */
-    .welcome-banner {
-      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-      border: 1px solid #e2e8f0;
-      border-radius: 24px;
-      padding: 40px;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 32px;
-    }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
-    .grid-3 { display: grid; grid-template-columns: 1fr 1.5fr; gap: 24px; }
-
-    .action-btn {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      padding: 24px;
-      border-radius: 20px;
-      width: 180px;
-      height: 140px;
-      border: none;
-      cursor: pointer;
-      transition: var(--transition);
-      font-size: 15px;
-      font-weight: 600;
-    }
-    .action-btn.dark-blue { background-color: var(--primary); color: white; }
-    .action-btn.dark-blue:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(15, 76, 156, 0.3); }
-    .action-btn.cyan { background-color: #a5f3fc; color: #0f766e; }
-    .action-btn.cyan:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(165, 243, 252, 0.5); }
-
-    /* Chat Specifics */
-    .chat-container { display: flex; flex-direction: column; height: calc(100vh - 160px); max-width: 800px; margin: 0 auto; position: relative; }
-    .chat-messages { flex: 1; overflow-y: auto; padding-bottom: 120px; display: flex; flex-direction: column; gap: 24px; }
-    .msg-row { display: flex; gap: 16px; }
-    .msg-row.user { justify-content: flex-end; }
-    .msg-avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .msg-avatar.bot { background-color: var(--primary-light); color: var(--primary); }
-    .msg-bubble { padding: 16px 20px; border-radius: 20px; font-size: 15px; line-height: 1.6; max-width: 600px; }
-    .msg-row.user .msg-bubble { background-color: var(--primary); color: white; border-top-right-radius: 4px; }
-    .msg-row.bot .msg-bubble { background-color: white; border: 1px solid #e2e8f0; border-top-left-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
-    .chat-input-area { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, white 80%, transparent); padding: 20px 0; }
-    .chat-input-wrapper { display: flex; align-items: center; background: white; border: 1px solid #cbd5e1; border-radius: 30px; padding: 8px 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-    .chat-input-wrapper input { flex: 1; border: none; padding: 12px; font-size: 15px; outline: none; }
-    .chat-input-btn { background: var(--primary); color: white; width: 44px; height: 44px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--transition); }
-    .chat-input-btn:hover { transform: scale(1.05); }
-
-    /* Health Record Specifics */
-    .stat-row { display: flex; justify-content: space-between; padding: 16px 0; border-bottom: 1px solid #f1f5f9; }
-    .stat-row:last-child { border-bottom: none; }
-    .pill-item { display: flex; gap: 16px; padding: 16px; border: 1px solid #f1f5f9; border-radius: 16px; background: #f8fafc; margin-bottom: 12px; align-items: center;}
-    .pill-icon { width: 48px; height: 48px; background: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-
-    /* Book Appointment */
-    .doctor-card { border: 2px solid #f1f5f9; border-radius: 20px; padding: 20px; display: flex; gap: 20px; cursor: pointer; transition: var(--transition); }
-    .doctor-card.selected { border-color: #0d9488; background-color: #f0fdfa; }
-    .doctor-card img { width: 80px; height: 80px; border-radius: 16px; object-fit: cover; }
-    .time-slot { padding: 10px 24px; border: 1px solid #cbd5e1; border-radius: 12px; font-weight: 600; cursor: pointer; transition: var(--transition); background: white; }
-    .time-slot.selected { background: var(--primary); color: white; border-color: var(--primary); }
-    .time-slot:hover:not(.disabled) { border-color: var(--primary); }
-    .time-slot.disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; border-color: #e2e8f0; }
-
-    /* Utility */
-    .text-primary { color: var(--primary); }
-    .text-teal { color: #0d9488; }
-    .text-gray-500 { color: #64748b; }
-    .font-bold { font-weight: 700; }
-    .mb-2 { margin-bottom: 8px; } .mb-4 { margin-bottom: 16px; } .mb-6 { margin-bottom: 24px; }
-    .flex { display: flex; } .items-center { align-items: center; } .gap-2 { gap: 8px; } .gap-4 { gap: 16px; }
-    .justify-between { justify-content: space-between; }
-    .badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-    .badge-cyan { background: #cffafe; color: #0891b2; }
-    .badge-green { background: #dcfce3; color: #16a34a; }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-<div class="app-container">
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="sidebar-logo">
-      <i data-lucide="shield-plus"></i>
-      <span>FamilyDoc</span>
-    </div>
-
-    <div class="user-profile">
-      <img src="https://i.pravatar.cc/150?img=32" alt="Avatar">
-      <div>
-        <div style="font-weight: 700; color: #1e293b;">Nguyễn Thị Mai</div>
-        <div style="font-size: 13px; color: #64748b; margin-top: 4px;">Thành viên Tiêu chuẩn</div>
+  <div class="app-container">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <i data-lucide="shield-plus"></i>
+        <span>FamilyDoc</span>
       </div>
-    </div>
 
-    <ul class="nav-menu">
-      <li class="nav-item active" onclick="switchPage('home', this)">
-        <i data-lucide="home"></i> Trang chủ
-      </li>
-      <li class="nav-item" onclick="switchPage('chat', this)">
-        <i data-lucide="message-square"></i> Tư vấn triệu chứng
-      </li>
-      <li class="nav-item" onclick="switchPage('book', this)">
-        <i data-lucide="calendar-plus"></i> Đặt lịch khám
-      </li>
-      <li class="nav-item" onclick="switchPage('medications', this)">
-        <i data-lucide="pill"></i> Nhắc nhở thuốc
-      </li>
-      <li class="nav-item" onclick="switchPage('records', this)">
-        <i data-lucide="clipboard-list"></i> Hồ sơ sức khỏe
-      </li>
-    </ul>
-
-    <div class="emergency-btn">
-      <i data-lucide="phone-call" style="width: 18px;"></i> Gọi hỗ trợ khẩn cấp
-    </div>
-
-    <ul class="nav-menu" style="margin-top: auto; border-top: 1px solid #e5e7eb; padding-top: 24px;">
-      <li class="nav-item"><i data-lucide="settings"></i> Cài đặt</li>
-      <li class="nav-item"><i data-lucide="log-out"></i> Đăng xuất</li>
-    </ul>
-  </aside>
-
-  <!-- MAIN CONTENT -->
-  <main class="main-content">
-    <header class="top-header">
-      <h1 class="font-bold" style="font-size: 20px; color: #1e293b;" id="header-title">Trang chủ</h1>
-      <div style="display: flex; gap: 24px; align-items: center;">
-        <i data-lucide="bell" style="color: #64748b; cursor: pointer;"></i>
-        <i data-lucide="settings" style="color: #64748b; cursor: pointer;"></i>
-      </div>
-    </header>
-
-    <div class="content-area">
-      
-      <!-- PAGE: HOME -->
-      <div id="page-home" class="page active">
-        <div class="welcome-banner">
-          <h2 style="font-size: 32px; font-weight: 700; color: var(--primary); margin-bottom: 12px;">Chào mừng trở lại, Mai!</h2>
-          <p style="color: #64748b; font-size: 16px; margin-bottom: 32px; max-width: 600px;">Hôm nay bạn cảm thấy thế nào? Hãy để FamilyDoc chăm sóc sức khỏe cho bạn và gia đình nhé.</p>
-          <div style="display: flex; gap: 24px;">
-            <button class="action-btn dark-blue" onclick="switchPage('chat', document.querySelectorAll('.nav-item')[1])">
-              <i data-lucide="message-square" style="width: 32px; height: 32px;"></i>
-              Tư vấn triệu chứng<br>ngay
-            </button>
-            <button class="action-btn cyan" onclick="switchPage('book', document.querySelectorAll('.nav-item')[2])">
-              <i data-lucide="calendar" style="width: 32px; height: 32px;"></i>
-              Đặt lịch khám mới
-            </button>
+      <div class="user-profile">
+        <img src="https://i.pravatar.cc/150?img=32" alt="Avatar">
+        <div>
+          <div class="user-name">Nguyễn Thị Mai</div>
+          <div class="user-role" style="color: #0b57d0; font-weight: 600; display: flex; align-items: center gap-1;">
+            <i data-lucide="award" style="width: 14px;"></i> Thành viên Premium
           </div>
         </div>
+      </div>
 
-        <div class="grid-2">
-          <div class="card" style="border-top: 4px solid var(--primary);">
-            <div class="flex items-center gap-2 font-bold text-primary mb-6" style="font-size: 20px;">
-              <i data-lucide="calendar"></i> Lịch khám sắp tới
+      <ul class="nav-menu">
+        <li class="nav-item active" onclick="switchPage('home', this)">
+          <i data-lucide="home"></i> Trang chủ
+        </li>
+        <li class="nav-item" onclick="switchPage('chat', this)">
+          <i data-lucide="message-square"></i> Tư vấn triệu chứng
+        </li>
+        <li class="nav-item" onclick="switchPage('book', this)">
+          <i data-lucide="calendar-plus"></i> Đặt lịch khám
+        </li>
+        <li class="nav-item" onclick="switchPage('doctors', this)">
+          <i data-lucide="users"></i> Danh sách bác sĩ
+        </li>
+        <li class="nav-item" onclick="switchPage('medications', this)">
+          <i data-lucide="pill"></i> Nhắc nhở thuốc
+        </li>
+        <li class="nav-item" onclick="switchPage('records', this)">
+          <i data-lucide="clipboard-list"></i> Hồ sơ sức khỏe
+        </li>
+      </ul>
+
+      <div class="emergency-btn">
+        <i data-lucide="phone-call"></i> Gọi hỗ trợ khẩn cấp
+      </div>
+
+      <ul class="nav-menu nav-bottom">
+        <li class="nav-item"><i data-lucide="settings"></i> Cài đặt</li>
+        <li class="nav-item"><i data-lucide="log-out"></i> Đăng xuất</li>
+      </ul>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      <header class="top-header">
+        <h1 class="header-title" id="header-title">Trang chủ</h1>
+        <div class="header-actions">
+          <i data-lucide="bell" class="icon-btn"></i>
+          <i data-lucide="settings" class="icon-btn"></i>
+        </div>
+      </header>
+
+      <div class="content-area">
+
+        <!-- PAGE: HOME -->
+        <div id="page-home" class="page active">
+          <div class="welcome-banner"
+            style="background: linear-gradient(135deg, #0b57d0 0%, #0842a0 100%); color: white; border: none; align-items: flex-start; text-align: left; padding: 48px;">
+            <h2 class="welcome-title" style="color: white; font-size: 32px; margin-bottom: 12px;">Chào buổi chiều, Mai!
+            </h2>
+            <p class="welcome-text"
+              style="color: rgba(255,255,255,0.8); font-size: 16px; max-width: 500px; margin-bottom: 32px;">Hệ thống
+              FamilyDoc đã sẵn sàng đồng hành cùng sức khỏe của bạn. Bạn cần hỗ trợ gì hôm nay?</p>
+            <div class="action-buttons" style="display: flex; gap: 16px;">
+              <button class="btn btn-primary"
+                style="background: white; color: #0b57d0; padding: 14px 28px; border-radius: 14px;"
+                onclick="switchPage('chat', document.querySelectorAll('.nav-item')[1])">
+                <i data-lucide="message-square"></i> Tư vấn ngay
+              </button>
+              <button class="btn btn-outline"
+                style="border-color: rgba(255,255,255,0.3); color: white; padding: 14px 28px; border-radius: 14px;"
+                onclick="switchPage('book', document.querySelectorAll('.nav-item')[2])">
+                <i data-lucide="calendar"></i> Đặt lịch khám
+              </button>
             </div>
-            <div style="background: #f8fafc; border-radius: 16px; padding: 20px; border: 1px solid #f1f5f9;">
-              <div style="color: #0d9488; font-weight: 700; font-size: 14px; margin-bottom: 8px;">Ngày mai, 09:00 AM</div>
-              <div style="font-weight: 700; font-size: 18px; margin-bottom: 4px; color: #1e293b;">Khám Tai Mũi Họng</div>
-              <div style="color: #64748b; font-size: 14px;">BS. Trần Văn A - Phòng khám Đa khoa</div>
-            </div>
-            <div style="margin-top: 16px; color: var(--primary); font-weight: 600; cursor: pointer;">Xem tất cả lịch hẹn</div>
           </div>
 
-          <div class="card" style="border-top: 4px solid #0d9488;">
-            <div class="flex items-center gap-2 font-bold text-teal mb-6" style="font-size: 20px;">
-              <i data-lucide="pill"></i> Nhắc uống thuốc
-            </div>
-            
-            <div class="pill-item" style="cursor: pointer;" onclick="togglePill(this)">
-              <div style="flex: 1;">
-                <div style="font-weight: 700; color: #1e293b; margin-bottom: 4px;">Vitamin C 500mg</div>
-                <div style="font-size: 13px; color: #64748b;">1 viên - Sau bữa ăn sáng</div>
+          <div class="grid-2">
+            <div class="card card-primary">
+              <div class="card-title" style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                <i data-lucide="calendar"></i> Lịch khám sắp tới
               </div>
-              <i data-lucide="check-circle-2" style="color: #16a34a;" class="check-icon"></i>
-            </div>
-            
-            <div class="pill-item" style="cursor: pointer; background: white;" onclick="togglePill(this)">
-              <div style="flex: 1;">
-                <div style="font-weight: 700; color: #1e293b; margin-bottom: 4px;">Amoxicillin 500mg</div>
-                <div style="font-size: 13px; color: #64748b;">1 viên - Sau bữa ăn tối</div>
+              <div class="appointment-card">
+                <div class="appointment-time" style="color: #666;margin-bottom: 8px;"><i> Ngày mai, 09:00 AM</i></div>
+                <div class="appointment-name">Khám Tai Mũi Họng</div>
+                <div class="appointment-doctor">BS. Trần Văn A - Phòng khám Đa khoa</div>
               </div>
-              <i data-lucide="circle" style="color: #94a3b8;" class="check-icon"></i>
+              <div class="view-all-link">Xem tất cả lịch hẹn</div>
             </div>
-          </div>
-        </div>
 
-        <div class="card flex justify-between items-center" style="background: #f0fdf4; border-color: #dcfce3;">
-          <div class="flex items-center gap-4">
-            <i data-lucide="flask-conical" style="color: #15803d; width: 32px; height: 32px;"></i>
-            <div>
-              <div style="font-weight: 700; font-size: 18px; color: #166534; margin-bottom: 4px;">Kết quả xét nghiệm mới nhất</div>
-              <div style="color: #14532d; font-size: 14px;">Đã có kết quả xét nghiệm máu tổng quát ngày 15/05/2026.</div>
-            </div>
-          </div>
-          <button class="btn" style="background: #14532d; color: white;">Xem kết quả</button>
-        </div>
-      </div>
+            <div class="card card-teal">
+              <div class="card-title" style="display:flex; align-items:center; margin-bottom:8px;">
+                <i data-lucide="pill"></i> Nhắc uống thuốc
+              </div>
 
-      <!-- PAGE: CHAT -->
-      <div id="page-chat" class="page">
-        <div class="chat-container">
-          <div style="text-align: center; color: #94a3b8; font-size: 12px; font-weight: 600; margin-bottom: 24px;">HÔM NAY, 14:30</div>
-          
-          <div class="chat-messages" id="chat-messages">
-            <!-- Bot msg 1 -->
-            <div class="msg-row bot">
-              <div class="msg-avatar bot"><i data-lucide="bot"></i></div>
-              <div style="display: flex; flex-direction: column; gap: 12px;">
-                <div class="msg-bubble">Chào Mai, tôi là trợ lý y tế AI của FamilyDoc. Tôi có thể giúp gì cho vấn đề sức khỏe của bạn hoặc gia đình hôm nay? Bạn có thể mô tả triệu chứng hoặc chọn một trong các chức năng bên dưới.</div>
-                <div class="flex gap-2">
-                  <button class="badge badge-cyan flex items-center gap-2" style="border:none; padding: 8px 16px; cursor:pointer;"><i data-lucide="activity" style="width: 14px;"></i> Khám tổng quát</button>
-                  <button class="badge badge-cyan flex items-center gap-2" style="border:none; padding: 8px 16px; cursor:pointer;"><i data-lucide="baby" style="width: 14px;"></i> Sức khỏe trẻ em</button>
+              <div class="pill-item" onclick="togglePill(this)">
+                <div class="pill-icon pill-icon-blue">
+                  <i data-lucide="pill"></i>
                 </div>
+                <div>
+                  <div class="pill-name">Vitamin C 500mg</div>
+                  <div class="pill-dosage">1 viên - Sau bữa ăn sáng</div>
+                </div>
+                <i data-lucide="check-circle-2" class="check-icon check-icon-active"></i>
+              </div>
+
+              <div class="pill-item pill-inactive" onclick="togglePill(this)">
+                <div class="pill-icon pill-icon-blue">
+                  <i data-lucide="pill"></i>
+                </div>
+                <div>
+                  <div class="pill-name">Amoxicillin 500mg</div>
+                  <div class="pill-dosage">1 viên - Sau bữa ăn tối</div>
+                </div>
+                <i data-lucide="circle" class="check-icon"></i>
               </div>
             </div>
+          </div>
 
-            <!-- User msg 1 -->
-            <div class="msg-row user">
-              <div class="msg-bubble">Từ sáng nay tôi cảm thấy hơi đau rát cổ họng và húng hắng ho, không bị sốt. Tôi nên làm gì?</div>
+          <div class="card card-green flex justify-between items-center">
+            <div class="flex items-center gap-4">
+              <i data-lucide="flask-conical" class="icon-green"></i>
+              <div>
+                <div class="result-title">Kết quả xét nghiệm mới nhất</div>
+                <div class="result-desc">Đã có kết quả xét nghiệm máu tổng quát ngày 15/05/2026.</div>
+              </div>
             </div>
+            <button class="btn btn-green">Xem kết quả</button>
+          </div>
+        </div>
 
-            <!-- Bot msg 2 -->
-            <div class="msg-row bot">
-              <div class="msg-avatar bot"><i data-lucide="bot"></i></div>
-              <div style="display: flex; flex-direction: column; gap: 12px;">
-                <div class="msg-bubble">
-                  Cảm ơn bạn đã chia sẻ. Triệu chứng đau rát họng và ho nhẹ không sốt thường là dấu hiệu ban đầu của viêm họng do virus hoặc kích ứng thời tiết.<br><br>
-                  <strong style="color: var(--primary);">Lời khuyên chăm sóc tại nhà:</strong><br>
-                  <ul style="margin-left: 20px; margin-top: 8px;">
-                    <li>Súc miệng bằng nước muối sinh lý ấm 2-3 lần/ngày.</li>
-                    <li>Uống nhiều nước ấm, có thể pha mật ong và chanh.</li>
-                    <li>Tránh đồ ăn cay nóng, nước đá lạnh.</li>
-                  </ul><br>
-                  Nếu tình trạng kéo dài trên 3 ngày hoặc xuất hiện sốt, bạn nên gặp bác sĩ để được kiểm tra kỹ hơn.
+        <!-- PAGE: CHAT -->
+        <div id="page-chat" class="page">
+          <div class="chat-container">
+            <div class="chat-date">HÔM NAY, 14:30</div>
+
+            <div class="chat-messages" id="chat-messages">
+              <!-- Bot msg 1 -->
+              <div class="msg-row bot">
+                <div class="msg-avatar bot">
+                  <i data-lucide="bot"></i>
                 </div>
-                
-                <!-- Action Card -->
-                <div style="background: #f0fdfa; border-left: 4px solid #0d9488; padding: 20px; border-radius: 12px;">
-                  <div style="color: #0d9488; font-weight: 700; font-size: 13px; margin-bottom: 8px;">GỢI Ý TIẾP THEO</div>
-                  <div style="font-size: 14px; margin-bottom: 16px;">Bạn có muốn đặt lịch tư vấn Video Call ngắn với bác sĩ chuyên khoa Tai Mũi Họng để yên tâm hơn không?</div>
+                <div>
+                  <div class="msg-bubble mb-2">Chào Mai, tôi là trợ lý y tế AI của FamilyDoc. Tôi có thể giúp gì cho vấn
+                    đề
+                    sức khỏe của bạn hoặc gia đình hôm nay? Bạn có thể mô tả triệu chứng hoặc chọn một trong các chức
+                    năng bên dưới.</div>
                   <div class="flex gap-2">
-                    <button class="btn btn-primary" onclick="switchPage('book', document.querySelectorAll('.nav-item')[2])">Đặt lịch ngay</button>
-                    <button class="btn btn-outline">Để sau</button>
+                    <button class="badge badge-cyan flex items-center gap-2">
+                      <i data-lucide="activity"></i> Khám tổng quát
+                    </button>
+                    <button class="badge badge-cyan flex items-center gap-2">
+                      <i data-lucide="baby"></i> Sức khỏe trẻ em
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- User msg 1 -->
+              <div class="msg-row user">
+                <div class="msg-bubble">Từ sáng nay tôi cảm thấy hơi đau rát cổ họng và húng hắng ho, không bị sốt. Tôi
+                  nên làm gì?</div>
+              </div>
+
+              <!-- Bot msg 2 -->
+              <div class="msg-row bot">
+                <div class="msg-avatar bot">
+                  <i data-lucide="bot"></i>
+                </div>
+                <div>
+                  <div class="msg-bubble">
+                    Cảm ơn bạn đã chia sẻ. Triệu chứng đau rát họng và ho nhẹ không sốt thường là dấu hiệu ban đầu của
+                    viêm họng do virus hoặc kích ứng thời tiết.<br><br>
+                    <strong class="text-primary">Lời khuyên chăm sóc tại nhà:</strong><br>
+                    <ul class="advice-list">
+                      <li>Súc miệng bằng nước muối sinh lý ấm 2-3 lần/ngày.</li>
+                      <li>Uống nhiều nước ấm, có thể pha mật ong và chanh.</li>
+                      <li>Tránh đồ ăn cay nóng, nước đá lạnh.</li>
+                    </ul><br>
+                    Nếu tình trạng kéo dài trên 3 ngày hoặc xuất hiện sốt, bạn nên gặp bác sĩ để được kiểm tra kỹ hơn.
+                  </div>
+
+                  <!-- Action Card -->
+                  <div class="action-card" style="margin-top: 1rem;">
+                    <div class="action-card-title">GỢI Ý TIẾP THEO</div>
+                    <div class="action-card-desc">Bạn có muốn đặt lịch tư vấn Video Call ngắn với bác sĩ chuyên khoa Tai
+                      Mũi Họng để yên tâm hơn không?</div>
+                    <div class="flex gap-2" style="margin-top: 8px;">
+                      <button class="btn btn-primary"
+                        onclick="switchPage('book', document.querySelectorAll('.nav-item')[2])">Đặt lịch ngay</button>
+                      <button class="btn btn-outline">Để sau</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="chat-input-area">
+              <div class="chat-input-wrapper">
+                <i data-lucide="plus-circle" class="icon-btn"></i>
+                <input type="text" placeholder="Nhập triệu chứng hoặc câu hỏi của bạn..." id="chatInput"
+                  onkeypress="if(event.key === 'Enter') sendMsg()">
+                <button class="chat-input-btn" onclick="sendMsg()">
+                  <i data-lucide="send"></i>
+                </button>
+              </div>
+              <div class="chat-disclaimer">AI có thể cung cấp thông tin không chính xác. Luôn tham khảo ý kiến bác sĩ.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PAGE: BOOK APPOINTMENT -->
+        <div id="page-book" class="page">
+          <div class="page-container">
+            <h2 class="page-title">Chọn Bác sĩ chuyên khoa</h2>
+            <p class="page-subtitle">Lựa chọn chuyên gia y tế phù hợp với nhu cầu tư vấn trực tuyến của bạn.</p>
+
+            <div class="grid-2" style="margin-top: 8px;">
+              <div class="doctor-card selected" onclick="selectDoctor(this)">
+                <img src="https://i.pravatar.cc/150?u=doc1" alt="BS">
+                <div>
+                  <h3 class="doctor-name">BS. Nguyễn Văn A</h3>
+                  <div class="doctor-specialty">Nội tổng quát</div>
+                  <div class="doctor-rating">
+                    <i data-lucide="star" class="star-icon"></i> 4.9 (120 đánh giá)
+                  </div>
+                  <div class="flex gap-2">
+                    <span class="badge badge-gray">Cảm cúm</span>
+                    <span class="badge badge-gray">Huyết áp</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="doctor-card" onclick="selectDoctor(this)">
+                <img src="https://i.pravatar.cc/150?u=doc2" alt="BS">
+                <div>
+                  <h3 class="doctor-name">BS. Trần Thị B</h3>
+                  <div class="doctor-specialty">Nhi khoa</div>
+                  <div class="doctor-rating">
+                    <i data-lucide="star" class="star-icon"></i> 4.8 (85 đánh giá)
+                  </div>
+                  <div class="flex gap-2">
+                    <span class="badge badge-gray">Sốt trẻ em</span>
+                    <span class="badge badge-gray">Dinh dưỡng</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card card-light">
+              <h3 class="section-title mb-2">Lịch trống hôm nay, 24 Tháng 10</h3>
+              <div class="time-slots flex gap-4">
+                <button class="time-slot" onclick="selectTime(this)">09:00</button>
+                <button class="time-slot" onclick="selectTime(this)">09:30</button>
+                <button class="time-slot selected" onclick="selectTime(this)">10:00</button>
+                <button class="time-slot" onclick="selectTime(this)">14:00</button>
+                <button class="time-slot disabled">15:30 (Kín)</button>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Lý do khám (Tùy chọn)</label>
+                <textarea class="form-textarea" placeholder="Mô tả ngắn gọn triệu chứng của bạn..."></textarea>
+              </div>
+
+              <div class="form-actions flex justify-between items-center">
+                <button class="btn btn-outline btn-rounded">Hủy</button>
+                <button class="btn btn-primary btn-rounded btn-large"
+                  onclick="alert('Đặt lịch thành công!'); switchPage('home', document.querySelectorAll('.nav-item')[0]);">
+                  <i data-lucide="calendar-check"></i> Xác nhận đặt lịch
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PAGE: HEALTH RECORDS -->
+        <div id="page-records" class="page">
+          <div class="page-container">
+            <div class="flex justify-between items-center mb-6">
+              <div>
+                <h2 class="page-title text-primary">Hồ sơ sức khỏe của tôi</h2>
+                <p class="page-subtitle">Bệnh nhân: Nguyễn Thị Mai</p>
+              </div>
+              <button class="btn btn-primary btn-rounded">
+                <i data-lucide="download"></i> Tải hồ sơ PDF
+              </button>
+            </div>
+
+            <div class="grid-3">
+              <div class="card card-primary">
+                <h3 class="card-title">
+                  <i data-lucide="activity"></i> Chỉ số cơ bản
+                </h3>
+                <div class="stat-row">
+                  <span class="text-gray-500">Nhóm máu</span>
+                  <span class="stat-value text-red">O+</span>
+                </div>
+                <div class="stat-row">
+                  <span class="text-gray-500">Cân nặng</span>
+                  <span class="stat-value">52 kg</span>
+                </div>
+                <div class="stat-row">
+                  <span class="text-gray-500">Chiều cao</span>
+                  <span class="stat-value">1m60</span>
+                </div>
+                <div class="stat-row align-center">
+                  <span class="text-gray-500">BMI</span>
+                  <div class="text-right">
+                    <div class="stat-value-large">20.3</div>
+                    <div class="badge badge-cyan">Bình thường</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card card-teal">
+                <h3 class="card-title">
+                  <i data-lucide="file-text"></i> Đơn thuốc hiện tại
+                </h3>
+                <div class="grid-2">
+                  <div class="pill-item">
+                    <div class="pill-icon pill-icon-blue">
+                      <i data-lucide="pill"></i>
+                    </div>
+                    <div>
+                      <div class="pill-name">Amoxicillin 500mg</div>
+                      <div class="pill-dosage">1 viên/lần, 2 lần/ngày sau ăn.</div>
+                      <div class="pill-date">
+                        <i data-lucide="history"></i> 10/10 - 17/10/2026
+                      </div>
+                    </div>
+                  </div>
+                  <div class="pill-item">
+                    <div class="pill-icon pill-icon-blue">
+                      <i data-lucide="syringe"></i>
+                    </div>
+                    <div>
+                      <div class="pill-name">Vitamin C 1000mg</div>
+                      <div class="pill-dosage">1 viên sủi/ngày vào buổi sáng.</div>
+                      <div class="pill-date">
+                        <i data-lucide="history"></i> 10/10 - 24/10/2026
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          <div class="chat-input-area">
-            <div class="chat-input-wrapper">
-              <i data-lucide="plus-circle" style="color: #94a3b8; cursor: pointer;"></i>
-              <input type="text" placeholder="Nhập triệu chứng hoặc câu hỏi của bạn..." id="chatInput" onkeypress="if(event.key === 'Enter') sendMsg()">
-              <button class="chat-input-btn" onclick="sendMsg()"><i data-lucide="send" style="width: 18px; margin-left: 2px;"></i></button>
+        <!-- PAGE: MEDICATIONS -->
+        <div id="page-medications" class="page">
+          <div class="page-container">
+            <div class="flex gap-4 mb-8">
+              <div class="info-card info-card-blue">
+                <i data-lucide="calendar" class="icon-primary"></i>
+                <div>
+                  <div class="info-card-label">Lịch tái khám sắp tới</div>
+                  <div class="info-card-text">Khám tim mạch định kỳ vào ngày mai, 09:00 AM tại Phòng khám A.</div>
+                </div>
+              </div>
+
+              <div class="info-card info-card-green">
+                <i data-lucide="flask-conical" class="icon-green"></i>
+                <div>
+                  <div class="info-card-label">Kết quả xét nghiệm mới</div>
+                  <div class="info-card-text">Đã có kết quả xét nghiệm máu ngày 10/10. Các chỉ số đều ổn định.</div>
+                  <div class="info-card-link">Xem chi tiết</div>
+                </div>
+              </div>
             </div>
-            <div style="text-align: center; font-size: 11px; color: #94a3b8; margin-top: 8px;">AI có thể cung cấp thông tin không chính xác. Luôn tham khảo ý kiến bác sĩ.</div>
+
+            <div class="med-section">
+              <div class="flex justify-between items-center mb-4">
+                <div class="time-header">
+                  <i data-lucide="sun" class="icon-orange"></i> Sáng (08:00)
+                </div>
+                <div class="badge badge-gray">2 Loại</div>
+              </div>
+
+              <div class="medication-list">
+                <div class="card card-compact flex justify-between items-center">
+                  <div class="flex items-center gap-4">
+                    <i data-lucide="check-circle-2" class="icon-cyan"></i>
+                    <div>
+                      <div class="med-name completed">Aspirin 81mg</div>
+                      <div class="med-dosage text-muted">1 viên - Sau khi ăn</div>
+                    </div>
+                  </div>
+                  <div class="med-status">Đã uống</div>
+                </div>
+
+                <div class="card card-compact flex justify-between items-center">
+                  <div class="flex items-center gap-4">
+                    <i data-lucide="check-circle-2" class="icon-cyan"></i>
+                    <div>
+                      <div class="med-name completed">Lisinopril 10mg</div>
+                      <div class="med-dosage text-muted">1 viên - Trước khi ăn</div>
+                    </div>
+                  </div>
+                  <div class="med-status">Đã uống</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="med-section">
+              <div class="flex justify-between items-center mb-4">
+                <div class="time-header text-primary">
+                  <i data-lucide="sun"></i> Trưa (12:30)
+                </div>
+                <div class="badge badge-red">Đến giờ</div>
+              </div>
+
+              <div class="card card-highlight flex justify-between items-center">
+                <div class="flex items-start gap-4">
+                  <div class="med-icon-wrapper">
+                    <i data-lucide="pill" class="icon-muted"></i>
+                  </div>
+                  <div>
+                    <div class="med-name">Metformin 500mg</div>
+                    <div class="med-dosage flex items-center gap-1">
+                      <span>🍴</span> Uống trong hoặc sau bữa ăn
+                    </div>
+                    <div class="flex gap-2">
+                      <span class="badge badge-gray">Tiểu đường</span>
+                      <span class="badge badge-gray">1 viên</span>
+                    </div>
+                  </div>
+                </div>
+                <button class="btn btn-primary">
+                  <i data-lucide="check-circle-2"></i> Đánh dấu đã uống
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between items-center mb-4">
+                <div class="time-header text-muted">
+                  <i data-lucide="moon"></i> Tối (20:00)
+                </div>
+                <div class="text-muted font-semibold">Sắp tới</div>
+              </div>
+
+              <div class="card card-compact flex justify-between items-center opacity-60">
+                <div class="flex items-center gap-4">
+                  <div class="med-icon-wrapper-inactive">
+                    <i data-lucide="pill" class="icon-muted"></i>
+                  </div>
+                  <div>
+                    <div class="med-name">Simvastatin 20mg</div>
+                    <div class="med-dosage text-muted">1 viên - Trước khi ngủ</div>
+                  </div>
+                </div>
+                <div class="text-muted">Chưa đến giờ</div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- PAGE: BOOK APPOINTMENT -->
-      <div id="page-book" class="page">
-        <div style="max-width: 900px; margin: 0 auto;">
-          <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">Chọn Bác sĩ chuyên khoa</h2>
-          <p style="color: #64748b; margin-bottom: 32px;">Lựa chọn chuyên gia y tế phù hợp với nhu cầu tư vấn trực tuyến của bạn.</p>
-
-          <div class="grid-2">
-            <div class="doctor-card selected" onclick="selectDoctor(this)">
-              <img src="https://i.pravatar.cc/150?u=doc1" alt="BS">
-              <div>
-                <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 4px;">BS. Nguyễn Văn A</h3>
-                <div style="color: #0d9488; font-weight: 600; font-size: 14px; margin-bottom: 8px;">Nội tổng quát</div>
-                <div style="font-size: 13px; color: #64748b; margin-bottom: 12px; display:flex; align-items:center; gap:4px;">
-                  <i data-lucide="star" style="width:14px; fill: #fbbf24; color: #fbbf24;"></i> 4.9 (120 đánh giá)
-                </div>
-                <div class="flex gap-2">
-                  <span class="badge" style="background:#f1f5f9; color:#475569;">Cảm cúm</span>
-                  <span class="badge" style="background:#f1f5f9; color:#475569;">Huyết áp</span>
-                </div>
+        <!-- PAGE: DOCTORS -->
+        <div id="page-doctors" class="page">
+          <div class="page-container">
+            <div class="flex justify-between items-center mb-8">
+              <h2 class="page-title">Đội ngũ Bác sĩ chuyên khoa</h2>
+              <div class="search-bar">
+                <i data-lucide="search"></i>
+                <input type="text" placeholder="Tìm tên bác sĩ hoặc chuyên khoa...">
               </div>
             </div>
 
-            <div class="doctor-card" onclick="selectDoctor(this)">
-              <img src="https://i.pravatar.cc/150?u=doc2" alt="BS">
-              <div>
-                <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 4px;">BS. Trần Thị B</h3>
-                <div style="color: #0d9488; font-weight: 600; font-size: 14px; margin-bottom: 8px;">Nhi khoa</div>
-                <div style="font-size: 13px; color: #64748b; margin-bottom: 12px; display:flex; align-items:center; gap:4px;">
-                  <i data-lucide="star" style="width:14px; fill: #fbbf24; color: #fbbf24;"></i> 4.8 (85 đánh giá)
+            <div class="grid-2">
+              <div class="doctor-card" style="background: white;">
+                <img src="https://i.pravatar.cc/150?u=doc1" alt="Doctor">
+                <div style="flex: 1;">
+                  <h3 class="doctor-name">BS. Nguyễn Văn A</h3>
+                  <div class="doctor-specialty">Chuyên khoa Nội | 15 năm kinh nghiệm</div>
+                  <div style="font-size: 13px; color: #64748b; margin-top: 8px;">
+                    <i data-lucide="star" style="width: 14px; color: #fbbf24; fill: #fbbf24; display: inline;"></i> 4.9
+                    (120 đánh giá)
+                  </div>
                 </div>
-                <div class="flex gap-2">
-                  <span class="badge" style="background:#f1f5f9; color:#475569;">Sốt trẻ em</span>
-                  <span class="badge" style="background:#f1f5f9; color:#475569;">Dinh dưỡng</span>
+                <div class="flex flex-column gap-2">
+                  <button class="btn btn-outline btn-compact" onclick="showDoctorDetails('doc1')">Xem hồ sơ</button>
+                  <button class="btn btn-primary btn-compact"
+                    onclick="switchPage('book', document.querySelectorAll('.nav-item')[2])">Đặt lịch</button>
+                </div>
+              </div>
+              <div class="doctor-card" style="background: white;">
+                <img src="https://i.pravatar.cc/150?u=doc2" alt="Doctor">
+                <div style="flex: 1;">
+                  <h3 class="doctor-name">BS. Trần Thị B</h3>
+                  <div class="doctor-specialty">Chuyên khoa Nhi | 10 năm kinh nghiệm</div>
+                  <div style="font-size: 13px; color: #64748b; margin-top: 8px;">
+                    <i data-lucide="star" style="width: 14px; color: #fbbf24; fill: #fbbf24; display: inline;"></i> 4.8
+                    (85 đánh giá)
+                  </div>
+                </div>
+                <div class="flex flex-column gap-2">
+                  <button class="btn btn-outline btn-compact" onclick="showDoctorDetails('doc2')">Xem hồ sơ</button>
+                  <button class="btn btn-primary btn-compact"
+                    onclick="switchPage('book', document.querySelectorAll('.nav-item')[2])">Đặt lịch</button>
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          <div class="card" style="margin-top: 32px; background: #f8fafc;">
-            <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 24px;">Lịch trống hôm nay, 24 Tháng 10</h3>
-            <div class="flex gap-4" style="flex-wrap: wrap; margin-bottom: 32px;">
-              <button class="time-slot" onclick="selectTime(this)">09:00</button>
-              <button class="time-slot" onclick="selectTime(this)">09:30</button>
-              <button class="time-slot selected" onclick="selectTime(this)">10:00</button>
-              <button class="time-slot" onclick="selectTime(this)">14:00</button>
-              <button class="time-slot disabled">15:30 (Kín)</button>
+        <!-- DOCTOR PROFILE MODAL -->
+        <div class="modal-overlay" id="doctor-modal">
+          <div class="modal-content">
+            <i data-lucide="x" class="close-modal" onclick="closeModal()"></i>
+            <div class="flex gap-6 items-start mb-8">
+              <img id="modal-doc-img" src=""
+                style="width: 100px; height: 100px; border-radius: 20px; object-fit: cover;">
+              <div>
+                <h2 id="modal-doc-name" style="font-size: 24px; font-weight: 700; margin-bottom: 4px;"></h2>
+                <div id="modal-doc-specialty" style="color: #0b57d0; font-weight: 600; margin-bottom: 8px;"></div>
+                <div class="flex gap-4">
+                  <div style="font-size: 13px; color: #64748b;"><i data-lucide="award"
+                      style="width: 14px; display: inline; margin-top: -3px;"></i> <span id="modal-doc-exp"></span> năm
+                    kinh nghiệm</div>
+                  <div style="font-size: 13px; color: #64748b;"><i data-lucide="star"
+                      style="width: 14px; display: inline; margin-top: -3px; color: #fbbf24; fill: #fbbf24;"></i> <span
+                      id="modal-doc-rate"></span></div>
+                </div>
+              </div>
             </div>
 
             <div style="margin-bottom: 24px;">
-              <label style="font-weight: 700; font-size: 14px; margin-bottom: 12px; display: block;">Lý do khám (Tùy chọn)</label>
-              <textarea placeholder="Mô tả ngắn gọn triệu chứng của bạn..." style="width: 100%; height: 120px; border: 1px solid #cbd5e1; border-radius: 12px; padding: 16px; font-family: inherit; font-size: 15px; outline: none;"></textarea>
+              <h4 style="font-weight: 700; margin-bottom: 8px;">Giới thiệu bản thân</h4>
+              <p id="modal-doc-bio" style="font-size: 14px; color: #475569; line-height: 1.6;"></p>
             </div>
 
-            <div class="flex justify-between items-center" style="border-top: 1px solid #e2e8f0; padding-top: 24px;">
-              <button class="btn btn-outline" style="border-radius: 30px;">Hủy</button>
-              <button class="btn btn-primary" style="border-radius: 30px; font-size: 16px; padding: 14px 32px;" onclick="alert('Đặt lịch thành công!'); switchPage('home', document.querySelectorAll('.nav-item')[0]);"><i data-lucide="calendar-check"></i> Xác nhận đặt lịch</button>
+            <div class="grid-2" style="gap: 16px;">
+              <div class="card" style="background: #f8fafc; border: none; padding: 16px;">
+                <div
+                  style="font-weight: 700; font-size: 13px; color: #64748b; text-transform: uppercase; margin-bottom: 8px;">
+                  Học vấn</div>
+                <div id="modal-doc-edu" style="font-size: 13px; font-weight: 600;"></div>
+              </div>
+              <div class="card" style="background: #f8fafc; border: none; padding: 16px;">
+                <div
+                  style="font-weight: 700; font-size: 13px; color: #64748b; text-transform: uppercase; margin-bottom: 8px;">
+                  Ngôn ngữ</div>
+                <div style="font-size: 13px; font-weight: 600;">Tiếng Việt, Tiếng Anh</div>
+              </div>
             </div>
+
+            <button class="btn btn-primary btn-large" style="width: 100%; margin-top: 32px;"
+              onclick="closeModal(); switchPage('book', document.querySelectorAll('.nav-item')[2]);">Đặt lịch khám
+              ngay</button>
           </div>
         </div>
+
       </div>
+    </main>
+  </div>
 
-      <!-- PAGE: HEALTH RECORDS -->
-      <div id="page-records" class="page">
-        <div style="max-width: 1000px; margin: 0 auto;">
-          <div class="flex justify-between items-center mb-6">
-            <div>
-              <h2 style="font-size: 28px; font-weight: 700; color: var(--primary); margin-bottom: 4px;">Hồ sơ sức khỏe của tôi</h2>
-              <p style="color: #64748b;">Bệnh nhân: Nguyễn Thị Mai</p>
-            </div>
-            <button class="btn btn-primary" style="border-radius: 30px;"><i data-lucide="download"></i> Tải hồ sơ PDF</button>
-          </div>
-
-          <div class="grid-3">
-            <div class="card" style="border-top: 4px solid var(--primary);">
-              <h3 class="flex items-center gap-2 font-bold text-primary mb-6" style="font-size: 18px;"><i data-lucide="activity"></i> Chỉ số cơ bản</h3>
-              <div class="stat-row">
-                <span class="text-gray-500">Nhóm máu</span>
-                <span style="font-weight: 700; color: #ef4444;">O+</span>
-              </div>
-              <div class="stat-row">
-                <span class="text-gray-500">Cân nặng</span>
-                <span style="font-weight: 700;">52 kg</span>
-              </div>
-              <div class="stat-row">
-                <span class="text-gray-500">Chiều cao</span>
-                <span style="font-weight: 700;">1m60</span>
-              </div>
-              <div class="stat-row" style="align-items: center;">
-                <span class="text-gray-500">BMI</span>
-                <div style="text-align: right;">
-                  <div style="font-weight: 700; font-size: 20px;">20.3</div>
-                  <div class="badge badge-cyan" style="display: inline-block; margin-top: 4px;">Bình thường</div>
-                </div>
-              </div>
-            </div>
-
-            <div class="card" style="border-top: 4px solid #0d9488;">
-              <h3 class="flex items-center gap-2 font-bold text-teal mb-6" style="font-size: 18px;"><i data-lucide="file-text"></i> Đơn thuốc hiện tại</h3>
-              <div class="grid-2">
-                <div class="pill-item" style="margin: 0;">
-                  <div class="pill-icon" style="background: #e0f2fe; color: #0284c7;"><i data-lucide="pill"></i></div>
-                  <div>
-                    <div style="font-weight: 700; margin-bottom: 4px;">Amoxicillin 500mg</div>
-                    <div style="font-size: 13px; color: #64748b; margin-bottom: 8px;">1 viên/lần, 2 lần/ngày sau ăn.</div>
-                    <div style="font-size: 11px; color: #94a3b8;"><i data-lucide="history" style="width:12px; display:inline; vertical-align:middle;"></i> 10/10 - 17/10/2026</div>
-                  </div>
-                </div>
-                <div class="pill-item" style="margin: 0;">
-                  <div class="pill-icon" style="background: #e0f2fe; color: #0284c7;"><i data-lucide="syringe"></i></div>
-                  <div>
-                    <div style="font-weight: 700; margin-bottom: 4px;">Vitamin C 1000mg</div>
-                    <div style="font-size: 13px; color: #64748b; margin-bottom: 8px;">1 viên sủi/ngày vào buổi sáng.</div>
-                    <div style="font-size: 11px; color: #94a3b8;"><i data-lucide="history" style="width:12px; display:inline; vertical-align:middle;"></i> 10/10 - 24/10/2026</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- PAGE: MEDICATIONS -->
-      <div id="page-medications" class="page">
-        <div style="max-width: 800px; margin: 0 auto;">
-          <div class="flex gap-4 mb-8">
-            <div style="flex: 1; background: #eff6ff; border: 1px solid #dbeafe; border-radius: 16px; padding: 16px; display: flex; gap: 16px;">
-              <i data-lucide="calendar" style="color: var(--primary); margin-top: 4px;"></i>
-              <div>
-                <div style="font-size: 12px; font-weight: 700; color: var(--primary); margin-bottom: 4px; text-transform: uppercase;">Lịch tái khám sắp tới</div>
-                <div style="font-size: 14px; color: #374151;">Khám tim mạch định kỳ vào ngày mai, 09:00 AM tại Phòng khám A.</div>
-              </div>
-            </div>
-            
-            <div style="flex: 1; background: #f0fdf4; border-left: 4px solid #16a34a; border-radius: 16px; padding: 16px; display: flex; gap: 16px;">
-              <i data-lucide="flask-conical" style="color: #15803d; margin-top: 4px;"></i>
-              <div>
-                <div style="font-size: 12px; font-weight: 700; color: #15803d; margin-bottom: 4px; text-transform: uppercase;">Kết quả xét nghiệm mới</div>
-                <div style="font-size: 14px; color: #374151; margin-bottom: 8px;">Đã có kết quả xét nghiệm máu ngày 10/10. Các chỉ số đều ổn định.</div>
-                <div style="font-size: 12px; font-weight: 700; color: #15803d; text-decoration: underline; cursor: pointer;">Xem chi tiết</div>
-              </div>
-            </div>
-          </div>
-
-          <div style="margin-bottom: 32px;">
-            <div class="flex justify-between items-center mb-4">
-              <div class="flex items-center gap-2 font-bold" style="font-size: 18px; color: #1e293b;"><i data-lucide="sun" style="color: #fb923c;"></i> Sáng (08:00)</div>
-              <div class="badge" style="background: #f1f5f9; color: #475569;">2 Loại</div>
-            </div>
-            
-            <div style="display: flex; flex-direction: column; gap: 12px;">
-              <div class="card flex justify-between items-center" style="padding: 16px 20px;">
-                <div class="flex items-center gap-4">
-                  <i data-lucide="check-circle-2" style="color: #22d3ee; width: 28px; height: 28px;"></i>
-                  <div>
-                    <div style="font-weight: 700; color: #94a3b8; text-decoration: line-through;">Aspirin 81mg</div>
-                    <div style="font-size: 12px; color: #94a3b8;">1 viên - Sau khi ăn</div>
-                  </div>
-                </div>
-                <div style="font-size: 12px; font-weight: 600; color: #0891b2;">Đã uống</div>
-              </div>
-
-              <div class="card flex justify-between items-center" style="padding: 16px 20px;">
-                <div class="flex items-center gap-4">
-                  <i data-lucide="check-circle-2" style="color: #22d3ee; width: 28px; height: 28px;"></i>
-                  <div>
-                    <div style="font-weight: 700; color: #94a3b8; text-decoration: line-through;">Lisinopril 10mg</div>
-                    <div style="font-size: 12px; color: #94a3b8;">1 viên - Trước khi ăn</div>
-                  </div>
-                </div>
-                <div style="font-size: 12px; font-weight: 600; color: #0891b2;">Đã uống</div>
-              </div>
-            </div>
-          </div>
-
-          <div style="border-top: 2px solid var(--primary); padding-top: 24px; margin-bottom: 32px;">
-            <div class="flex justify-between items-center mb-4">
-              <div class="flex items-center gap-2 font-bold" style="font-size: 18px; color: var(--primary);"><i data-lucide="sun" style="color: var(--primary);"></i> Trưa (12:30)</div>
-              <div class="badge" style="background: #fef2f2; color: #dc2626;">Đến giờ</div>
-            </div>
-            
-            <div class="card flex justify-between items-center" style="padding: 20px; background: #f8fafc;">
-              <div class="flex items-start gap-4">
-                <div style="background: white; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0;">
-                  <i data-lucide="pill" style="color: #64748b; width: 24px; height: 24px;"></i>
-                </div>
-                <div>
-                  <div style="font-weight: 700; font-size: 16px; margin-bottom: 4px; color: #1e293b;">Metformin 500mg</div>
-                  <div style="font-size: 12px; color: #64748b; margin-bottom: 12px; display: flex; align-items: center; gap: 4px;"><span>🍴</span> Uống trong hoặc sau bữa ăn</div>
-                  <div class="flex gap-2">
-                    <span class="badge" style="background: #e2e8f0; color: #475569;">Tiểu đường</span>
-                    <span class="badge" style="background: #e2e8f0; color: #475569;">1 viên</span>
-                  </div>
-                </div>
-              </div>
-              <button class="btn btn-primary"><i data-lucide="check-circle-2" style="width: 18px;"></i> Đánh dấu đã uống</button>
-            </div>
-          </div>
-
-          <div>
-            <div class="flex justify-between items-center mb-4">
-              <div class="flex items-center gap-2 font-bold" style="font-size: 18px; color: #94a3b8;"><i data-lucide="moon" style="color: #94a3b8;"></i> Tối (20:00)</div>
-              <div style="font-size: 12px; font-weight: 600; color: #94a3b8;">Sắp tới</div>
-            </div>
-            
-            <div class="card flex justify-between items-center" style="padding: 16px 20px; opacity: 0.6;">
-              <div class="flex items-center gap-4">
-                <div style="background: #f1f5f9; padding: 8px; border-radius: 50%;">
-                  <i data-lucide="pill" style="color: #94a3b8; width: 20px; height: 20px;"></i>
-                </div>
-                <div>
-                  <div style="font-weight: 700; color: #374151;">Simvastatin 20mg</div>
-                  <div style="font-size: 12px; color: #64748b;">1 viên - Trước khi ngủ</div>
-                </div>
-              </div>
-              <div style="font-size: 12px; color: #94a3b8;">Chưa đến giờ</div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-    </div>
-  </main>
-</div>
-
-<script>
-  // Initialize icons
-  lucide.createIcons();
-
-  // Navigation Logic
-  const pageTitles = {
-    'home': 'Trang chủ',
-    'chat': 'Trợ lý y tế',
-    'book': 'Đặt lịch Video Call',
-    'medications': 'Nhắc nhở thuốc',
-    'records': ''
-  };
-
-  function switchPage(pageId, navElement) {
-    // Hide all pages
-    document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-    // Show selected page
-    document.getElementById('page-' + pageId).classList.add('active');
-    
-    // Update nav classes
-    document.querySelectorAll('.nav-item').forEach(item => {
-      item.classList.remove('active');
-      item.classList.remove('active-cyan');
-    });
-    
-    // Add active class based on page
-    if(pageId === 'book' || pageId === 'chat') {
-      navElement.classList.add('active-cyan');
-    } else {
-      navElement.classList.add('active');
-    }
-
-    // Update Header
-    document.getElementById('header-title').innerText = pageTitles[pageId];
-  }
-
-  // Book Appointment Logic
-  function selectDoctor(element) {
-    document.querySelectorAll('.doctor-card').forEach(card => card.classList.remove('selected'));
-    element.classList.add('selected');
-  }
-
-  function selectTime(element) {
-    if(element.classList.contains('disabled')) return;
-    document.querySelectorAll('.time-slot').forEach(slot => slot.classList.remove('selected'));
-    element.classList.add('selected');
-  }
-
-  // Check Pill Logic
-  function togglePill(element) {
-    const icon = element.querySelector('.check-icon');
-    if(icon.getAttribute('data-lucide') === 'circle') {
-      icon.setAttribute('data-lucide', 'check-circle-2');
-      icon.style.color = '#16a34a';
-      element.style.background = '#f8fafc';
-    } else {
-      icon.setAttribute('data-lucide', 'circle');
-      icon.style.color = '#94a3b8';
-      element.style.background = 'white';
-    }
+  <script>
+    // Initialize icons
     lucide.createIcons();
-  }
 
-  // Chat Logic
-  function sendMsg() {
-    const input = document.getElementById('chatInput');
-    const text = input.value.trim();
-    if(!text) return;
+    // Navigation Logic
+    const pageTitles = {
+      'home': 'Trang chủ',
+      'chat': 'Trợ lý y tế',
+      'book': 'Đặt lịch khám',
+      'doctors': 'Danh sách bác sĩ',
+      'medications': 'Nhắc nhở thuốc',
+      'records': 'Hồ sơ sức khỏe'
+    };
 
-    const chatContainer = document.getElementById('chat-messages');
-    
-    // Add user message
-    const userRow = document.createElement('div');
-    userRow.className = 'msg-row user';
-    userRow.innerHTML = `<div class="msg-bubble">${text}</div>`;
-    chatContainer.appendChild(userRow);
-    
-    input.value = '';
-    chatContainer.scrollTop = chatContainer.scrollHeight;
+    function switchPage(pageId, navElement) {
+      // Hide all pages
+      document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+      // Show selected page
+      document.getElementById('page-' + pageId).classList.add('active');
 
-    // Simulate bot typing
-    setTimeout(() => {
-      const botRow = document.createElement('div');
-      botRow.className = 'msg-row bot';
-      botRow.innerHTML = `
+      // Update nav classes
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+        item.classList.remove('active-cyan');
+      });
+
+      // Add active class based on page
+      if (pageId === 'book' || pageId === 'chat') {
+        navElement.classList.add('active-cyan');
+      } else {
+        navElement.classList.add('active');
+      }
+
+      // Update Header
+      document.getElementById('header-title').innerText = pageTitles[pageId];
+    }
+
+    // Book Appointment Logic
+    function selectDoctor(element) {
+      document.querySelectorAll('.doctor-card').forEach(card => card.classList.remove('selected'));
+      element.classList.add('selected');
+    }
+
+    function selectTime(element) {
+      if (element.classList.contains('disabled')) return;
+      document.querySelectorAll('.time-slot').forEach(slot => slot.classList.remove('selected'));
+      element.classList.add('selected');
+    }
+
+    // Check Pill Logic
+    function togglePill(element) {
+      const icon = element.querySelector('.check-icon');
+      if (icon.getAttribute('data-lucide') === 'circle') {
+        icon.setAttribute('data-lucide', 'check-circle-2');
+        icon.classList.add('check-icon-active');
+        element.classList.add('pill-item-active');
+      } else {
+        icon.setAttribute('data-lucide', 'circle');
+        icon.classList.remove('check-icon-active');
+        element.classList.remove('pill-item-active');
+      }
+      lucide.createIcons();
+    }
+
+    // Chat Logic
+    function sendMsg() {
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const chatContainer = document.getElementById('chat-messages');
+
+      // Add user message
+      const userRow = document.createElement('div');
+      userRow.className = 'msg-row user';
+      userRow.innerHTML = `<div class="msg-bubble">${text}</div>`;
+      chatContainer.appendChild(userRow);
+
+      input.value = '';
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+
+      // Simulate bot typing
+      setTimeout(() => {
+        const botRow = document.createElement('div');
+        botRow.className = 'msg-row bot';
+        botRow.innerHTML = `
         <div class="msg-avatar bot"><i data-lucide="bot"></i></div>
         <div style="display: flex; flex-direction: column; gap: 12px;">
           <div class="msg-bubble">Tôi đã nhận được thông tin: "${text}". Xin vui lòng chờ Bác sĩ phản hồi thêm nhé!</div>
         </div>
       `;
-      chatContainer.appendChild(botRow);
-      lucide.createIcons();
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-    }, 1000);
-  }
-</script>
+        chatContainer.appendChild(botRow);
+        lucide.createIcons();
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }, 1000);
+    }
+
+    const doctorsData = {
+      'doc1': {
+        name: 'BS. Nguyễn Văn A',
+        img: 'https://i.pravatar.cc/150?u=doc1',
+        specialty: 'Chuyên khoa Nội',
+        exp: 15,
+        rate: '4.9 (120 đánh giá)',
+        edu: 'Đại học Y Hà Nội',
+        bio: 'Bác sĩ A có hơn 15 năm kinh nghiệm trong lĩnh vực nội khoa, chuyên điều trị các bệnh lý mãn tính như tiểu đường và huyết áp cao. Ông đã tu nghiệp nhiều năm tại Pháp.'
+      },
+      'doc2': {
+        name: 'BS. Trần Thị B',
+        img: 'https://i.pravatar.cc/150?u=doc2',
+        specialty: 'Chuyên khoa Nhi',
+        exp: 10,
+        rate: '4.8 (85 đánh giá)',
+        edu: 'Đại học Y Dược TP.HCM',
+        bio: 'Bác sĩ B là chuyên gia nhi khoa tận tâm, nổi tiếng với phương pháp điều trị nhẹ nhàng và hiệu quả cho trẻ em. Bà chuyên sâu về dinh dưỡng và phát triển trẻ em.'
+      }
+    };
+
+    function showDoctorDetails(id) {
+      const doc = doctorsData[id];
+      document.getElementById('modal-doc-img').src = doc.img;
+      document.getElementById('modal-doc-name').innerText = doc.name;
+      document.getElementById('modal-doc-specialty').innerText = doc.specialty;
+      document.getElementById('modal-doc-exp').innerText = doc.exp;
+      document.getElementById('modal-doc-rate').innerText = doc.rate;
+      document.getElementById('modal-doc-edu').innerText = doc.edu;
+      document.getElementById('modal-doc-bio').innerText = doc.bio;
+
+      document.getElementById('doctor-modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('doctor-modal').style.display = 'none';
+    }
+  </script>
 
 </body>
+
 </html>

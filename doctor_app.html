@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>FamilyDoc - Bác sĩ</title>
+   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+   <script src="https://unpkg.com/lucide@latest"></script>
+   <link rel="stylesheet" href="style.css">
+   <style>
+      /* Custom styles for Doctor App */
+      .calendar-container {
+         display: grid;
+         grid-template-columns: 1fr 350px;
+         gap: 24px;
+         height: calc(100vh - 180px);
+      }
+
+      .calendar-grid {
+         background: white;
+         border-radius: 20px;
+         padding: 24px;
+         border: 1px solid var(--border-color);
+         display: flex;
+         flex-direction: column;
+      }
+
+      .calendar-header {
+         display: flex;
+         justify-content: space-between;
+         align-items: center;
+         margin-bottom: 24px;
+      }
+
+      .calendar-days {
+         display: grid;
+         grid-template-columns: repeat(7, 1fr);
+         gap: 8px;
+         flex: 1;
+      }
+
+      .day-label {
+         text-align: center;
+         font-size: 13px;
+         font-weight: 600;
+         color: #64748b;
+         padding: 8px;
+      }
+
+      .day-cell {
+         border: 1px solid #f1f5f9;
+         border-radius: 12px;
+         padding: 8px;
+         min-height: 80px;
+         transition: all 0.2s;
+         cursor: pointer;
+      }
+
+      .day-cell:hover {
+         background: #f8fafc;
+         border-color: #0b57d0;
+      }
+
+      .day-cell.active {
+         background: #eff6ff;
+         border-color: #0b57d0;
+      }
+
+      .day-cell.today {
+         border: 2px solid #0b57d0;
+      }
+
+      .day-cell .num {
+         font-weight: 700;
+         font-size: 14px;
+         margin-bottom: 4px;
+         display: block;
+      }
+
+      .event-dot {
+         width: 6px;
+         height: 6px;
+         border-radius: 50%;
+         background: #0b57d0;
+         margin: 2px auto;
+      }
+
+      /* Consultation Chat Layout */
+      .chat-layout {
+         display: grid;
+         grid-template-columns: 300px 1fr;
+         height: calc(100vh - 160px);
+         background: white;
+         border-radius: 20px;
+         border: 1px solid var(--border-color);
+         overflow: hidden;
+      }
+
+      .chat-sidebar {
+         border-right: 1px solid var(--border-color);
+         display: flex;
+         flex-direction: column;
+         background: #f8fafc;
+      }
+
+      .chat-list-item {
+         padding: 16px;
+         display: flex;
+         gap: 12px;
+         align-items: center;
+         cursor: pointer;
+         border-bottom: 1px solid #f1f5f9;
+         transition: all 0.2s;
+      }
+
+      .chat-list-item:hover {
+         background: #f1f5f9;
+      }
+
+      .chat-list-item.active {
+         background: white;
+         border-left: 4px solid #0b57d0;
+      }
+
+      .chat-list-item .status-dot {
+         width: 10px;
+         height: 10px;
+         border-radius: 50%;
+         background: #16a34a;
+         border: 2px solid white;
+         position: absolute;
+         bottom: 0;
+         right: 0;
+      }
+   </style>
+</head>
+
+<body>
+
+   <div class="app-container">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+         <div class="sidebar-logo">
+            <i data-lucide="shield-plus"></i>
+            <span>FamilyDoc <small style="font-size: 10px; opacity: 0.7;">PRO</small></span>
+         </div>
+
+         <div class="user-profile">
+            <img src="https://i.pravatar.cc/150?u=doc1" alt="Doctor Avatar">
+            <div>
+               <div class="user-name"><strong>BS. Trần Văn A</strong></div>
+               <div class="user-role" style="color: #16a34a; display: flex; align-items: center; gap: 1px;">
+                  <i data-lucide="check-circle" style="width: 10px;"></i> Khoa Nội
+               </div>
+            </div>
+         </div>
+
+         <ul class="nav-menu">
+            <li class="nav-item active" onclick="switchPage('home', this)">
+               <i data-lucide="layout-dashboard"></i> Tổng quan
+            </li>
+            <li class="nav-item" onclick="switchPage('appointments', this)">
+               <i data-lucide="calendar"></i> Lịch hẹn khám
+               <span class="badge badge-red" style="margin-left: auto;">5</span>
+            </li>
+            <li class="nav-item" onclick="switchPage('patients', this)">
+               <i data-lucide="users"></i> Bệnh nhân của tôi
+            </li>
+            <li class="nav-item" onclick="switchPage('chat', this)">
+               <i data-lucide="message-circle"></i> Tư vấn trực tuyến
+               <span class="badge badge-cyan" style="margin-left: auto;">2</span>
+            </li>
+            <li class="nav-item" onclick="switchPage('records', this)">
+               <i data-lucide="folder-kanban"></i> Hồ sơ bệnh án
+            </li>
+         </ul>
+
+         <ul class="nav-menu nav-bottom">
+            <li class="nav-item"><i data-lucide="settings"></i> Cài đặt</li>
+            <li class="nav-item"><i data-lucide="log-out"></i> Đăng xuất</li>
+         </ul>
+      </aside>
+
+      <!-- MAIN CONTENT -->
+      <main class="main-content">
+         <header class="top-header">
+            <h1 class="header-title" id="header-title">Tổng quan</h1>
+            <div class="header-actions">
+               <div class="search-bar" style="display: flex; align-items: center; gap: 10px; margin: 20px;">
+                  <i data-lucide="search"></i>
+                  <input type="text" placeholder="Tìm kiếm bệnh nhân, hồ sơ...">
+               </div>
+               <i data-lucide="bell" class="icon-btn"></i>
+               <i data-lucide="user" class="icon-btn"></i>
+            </div>
+         </header>
+
+         <div class="content-area">
+
+            <!-- PAGE: HOME (DASHBOARD) -->
+            <div id="page-home" class="page active">
+               <div class="welcome-banner" style="text-align: left; align-items: flex-start; padding: 32px;">
+                  <h2 class="welcome-title">Chào buổi sáng, Bác sĩ A!</h2>
+                  <p class="welcome-text">Bạn có 8 lịch hẹn trong hôm nay. 3 bệnh nhân đang chờ tư vấn trực tuyến.</p>
+               </div>
+
+               <div class="grid-2">
+                  <!-- Stats -->
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                     <div class="card card-primary" style="padding: 20px;">
+                        <div class="text-muted" style="font-size: 13px; font-weight: 600;">LỊCH HẸN HÔM NAY</div>
+                        <div style="font-size: 32px; font-weight: 700; margin-top: 10px;">08</div>
+                        <div class="text-green" style="font-size: 12px; font-weight: 600; margin-top: 4px;">+2 so với
+                           hôm qua</div>
+                     </div>
+                     <div class="card card-teal" style="padding: 20px;">
+                        <div class="text-muted" style="font-size: 13px; font-weight: 600;">TƯ VẤN MỚI</div>
+                        <div style="font-size: 32px; font-weight: 700; margin-top: 10px;">03</div>
+                        <div class="text-primary" style="font-size: 12px; font-weight: 600; margin-top: 4px;">Phản hồi
+                           ngay</div>
+                     </div>
+                     <div class="card card-highlight" style="padding: 20px; grid-column: span 2;">
+                        <div class="text-muted" style="font-size: 13px; font-weight: 600;">TỔNG BỆNH NHÂN</div>
+                        <div style="font-size: 32px; font-weight: 700; margin-top: 10px;">1,248</div>
+                        <div class="text-muted" style="font-size: 12px; margin-top: 4px;">Cập nhật 1 giờ trước</div>
+                     </div>
+                  </div>
+
+                  <!-- Urgent Alerts -->
+                  <div class="card card-red">
+                     <div class="card-title"
+                        style="display: flex; align-items: center; gap: 1px; color: #ef4444;margin-bottom: 12px"><i
+                           data-lucide="alert-circle"></i> Cảnh báo khẩn cấp</div>
+                     <div class="appointment-card">
+                        <div class="appointment-time" style="margin-bottom: 8px; color: #efab44;"><i>Vừa xong</i></div>
+                        <div class="appointment-name">Bệnh nhân: Lê Văn C</div>
+                        <div class="appointment-doctor">Nhịp tim tăng cao (110 bpm) - Theo dõi từ xa</div>
+                     </div>
+                     <div class="appointment-card" style="margin-top: 12px;">
+                        <div class="appointment-time" style="margin-bottom: 8px;">10 phút trước</div>
+                        <div class="appointment-name">Bệnh nhân: Phạm Thị D</div>
+                        <div class="appointment-doctor">Yêu cầu cấp lại đơn thuốc huyết áp</div>
+                     </div>
+                  </div>
+               </div>
+
+               <div class="card" style="margin-top: 24px;">
+                  <div class="flex justify-between items-center mb-6">
+                     <h3 class="card-title" style="margin-bottom: 0;">Lịch khám tiếp theo</h3>
+                     <button class="btn btn-outline btn-rounded">Xem toàn bộ lịch</button>
+                  </div>
+                  <table style="width: 100%; border-collapse: collapse;">
+                     <thead>
+                        <tr
+                           style="text-align: left; color: #64748b; font-size: 13px; border-bottom: 1px solid #e2e8f0;">
+                           <th style="padding: 12px 0;">THỜI GIAN</th>
+                           <th>BỆNH NHÂN</th>
+                           <th>LÝ DO KHÁM</th>
+                           <th>TRẠNG THÁI</th>
+                           <th>THAO TÁC</th>
+                        </tr>
+                     </thead>
+                     <tbody>
+                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                           <td style="padding: 16px 0; font-weight: 700;">09:00 AM</td>
+                           <td>
+                              <div class="flex items-center gap-2">
+                                 <img src="https://i.pravatar.cc/150?u=p1"
+                                    style="width: 32px; height: 32px; border-radius: 50%;">
+                                 <span>Nguyễn Thị Mai</span>
+                              </div>
+                           </td>
+                           <td>Khám Tai Mũi Họng</td>
+                           <td><span class="badge badge-cyan">Đang chờ</span></td>
+                           <td><button class="btn btn-primary btn-compact" style="padding: 6px 12px;">Bắt đầu</button>
+                           </td>
+                        </tr>
+                        <tr>
+                           <td style="padding: 16px 0; font-weight: 700;">09:45 AM</td>
+                           <td>
+                              <div class="flex items-center gap-2">
+                                 <img src="https://i.pravatar.cc/150?u=p2"
+                                    style="width: 32px; height: 32px; border-radius: 50%;">
+                                 <span>Trần Văn B</span>
+                              </div>
+                           </td>
+                           <td>Tái khám định kỳ</td>
+                           <td><span class="badge badge-gray">Sắp tới</span></td>
+                           <td><button class="btn btn-outline btn-compact" style="padding: 6px 12px;">Chi tiết</button>
+                           </td>
+                        </tr>
+                     </tbody>
+                  </table>
+               </div>
+            </div>
+
+            <!-- PAGE: APPOINTMENTS -->
+            <div id="page-appointments" class="page">
+               <div class="calendar-container">
+                  <div class="calendar-grid">
+                     <div class="calendar-header">
+                        <h2 style="font-size: 20px; font-weight: 700;">Tháng 5, 2026</h2>
+                        <div class="flex gap-2">
+                           <button class="btn btn-outline btn-compact"><i data-lucide="chevron-left"></i></button>
+                           <button class="btn btn-outline btn-compact"><i data-lucide="chevron-right"></i></button>
+                        </div>
+                     </div>
+                     <div class="calendar-days">
+                        <div class="day-label">T2</div>
+                        <div class="day-label">T3</div>
+                        <div class="day-label">T4</div>
+                        <div class="day-label">T5</div>
+                        <div class="day-label">T6</div>
+                        <div class="day-label">T7</div>
+                        <div class="day-label">CN</div>
+                        <!-- Mock Days -->
+                        <div class="day-cell" style="opacity: 0.3;"><span class="num">27</span></div>
+                        <div class="day-cell" style="opacity: 0.3;"><span class="num">28</span></div>
+                        <div class="day-cell" style="opacity: 0.3;"><span class="num">29</span></div>
+                        <div class="day-cell" style="opacity: 0.3;"><span class="num">30</span></div>
+                        <div class="day-cell"><span class="num">1</span></div>
+                        <div class="day-cell"><span class="num">2</span>
+                           <div class="event-dot"></div>
+                        </div>
+                        <div class="day-cell"><span class="num">3</span></div>
+                        <div class="day-cell"><span class="num">4</span></div>
+                        <div class="day-cell"><span class="num">5</span>
+                           <div class="event-dot"></div>
+                        </div>
+                        <div class="day-cell"><span class="num">6</span></div>
+                        <div class="day-cell"><span class="num">7</span></div>
+                        <div class="day-cell"><span class="num">8</span></div>
+                        <div class="day-cell"><span class="num">9</span></div>
+                        <div class="day-cell"><span class="num">10</span></div>
+                        <div class="day-cell"><span class="num">11</span></div>
+                        <div class="day-cell"><span class="num">12</span></div>
+                        <div class="day-cell"><span class="num">13</span></div>
+                        <div class="day-cell today active"><span class="num">14</span>
+                           <div class="event-dot"></div>
+                           <div class="event-dot"></div>
+                        </div>
+                        <div class="day-cell"><span class="num">15</span></div>
+                        <!-- ... more days ... -->
+                     </div>
+                  </div>
+                  <div class="card">
+                     <h3 class="card-title">Lịch trình ngày 14/05</h3>
+                     <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <div class="appointment-card" style="margin-top: 12px;">
+                           <div class="appointment-time">09:00 - 09:30</div>
+                           <div class="appointment-name">Nguyễn Thị Mai</div>
+                           <div class="appointment-doctor">Khám Tai Mũi Họng</div>
+                        </div>
+                        <div class="appointment-card">
+                           <div class="appointment-time">10:00 - 10:30</div>
+                           <div class="appointment-name">Trần Văn B</div>
+                           <div class="appointment-doctor">Tái khám định kỳ</div>
+                        </div>
+                     </div>
+                     <button class="btn btn-primary" style="width: 100%; margin-top: 24px;"><i data-lucide="plus"></i>
+                        Thêm lịch hẹn</button>
+                  </div>
+               </div>
+            </div>
+
+            <!-- PAGE: PATIENTS -->
+            <div id="page-patients" class="page">
+               <div class="page-container">
+                  <div class="flex justify-between items-center mb-6">
+                     <h2 class="page-title">Danh sách bệnh nhân</h2>
+                     <button class="btn btn-primary btn-rounded"><i data-lucide="user-plus"></i> Thêm bệnh nhân
+                        mới</button>
+                  </div>
+                  <div class="grid-2">
+                     <div class="doctor-card" style="background: white;">
+                        <img src="https://i.pravatar.cc/150?u=p1" alt="Patient">
+                        <div style="flex: 1;">
+                           <h3 class="doctor-name">Nguyễn Thị Mai</h3>
+                           <div class="doctor-specialty">ID: BN-2026-001 | Nữ, 28 tuổi</div>
+                           <div class="flex gap-2" style="margin-top: 10px;">
+                              <span class="badge badge-gray">Tiểu đường</span>
+                              <span class="badge badge-gray">Huyết áp</span>
+                           </div>
+                        </div>
+                        <div class="flex flex-column gap-2">
+                           <button class="btn btn-outline btn-compact"><i data-lucide="file-text"></i> Hồ sơ</button>
+                        </div>
+                     </div>
+                     <div class="doctor-card" style="background: white;">
+                        <img src="https://i.pravatar.cc/150?u=p2" alt="Patient">
+                        <div style="flex: 1;">
+                           <h3 class="doctor-name">Trần Văn B</h3>
+                           <div class="doctor-specialty">ID: BN-2026-002 | Nam, 45 tuổi</div>
+                           <div class="flex gap-2" style="margin-top: 10px;">
+                              <span class="badge badge-gray">Tim mạch</span>
+                           </div>
+                        </div>
+                        <div class="flex flex-column gap-2">
+                           <button class="btn btn-outline btn-compact"><i data-lucide="file-text"></i> Hồ sơ</button>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+            <!-- PAGE: CHAT (CONSULTATION) -->
+            <div id="page-chat" class="page">
+               <div class="chat-layout">
+                  <!-- Chat Sidebar -->
+                  <div class="chat-sidebar">
+                     <div style="padding: 20px; border-bottom: 1px solid #e2e8f0;">
+                        <div class="search-bar" style="width: 100%;">
+                           <i data-lucide="search"></i>
+                           <input type="text" placeholder="Tìm bệnh nhân...">
+                        </div>
+                     </div>
+                     <div style="flex: 1; overflow-y: auto;">
+                        <div class="chat-list-item active">
+                           <div style="position: relative;">
+                              <img src="https://i.pravatar.cc/150?u=p1"
+                                 style="width: 44px; height: 44px; border-radius: 50%;">
+                              <div class="status-dot"></div>
+                           </div>
+                           <div style="flex: 1; overflow: hidden;">
+                              <div class="flex justify-between items-center">
+                                 <div style="font-weight: 700; font-size: 14px;">Nguyễn Thị Mai</div>
+                                 <span style="font-size: 11px; color: #94a3b8;">14:30</span>
+                              </div>
+                              <div
+                                 style="font-size: 13px; color: #64748b; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
+                                 Bác sĩ xem giúp tôi kết quả xét nghiệm...</div>
+                           </div>
+                        </div>
+                        <div class="chat-list-item">
+                           <img src="https://i.pravatar.cc/150?u=p2"
+                              style="width: 44px; height: 44px; border-radius: 50%;">
+                           <div style="flex: 1; overflow: hidden;">
+                              <div class="flex justify-between items-center">
+                                 <div style="font-weight: 700; font-size: 14px;">Trần Văn B</div>
+                                 <span style="font-size: 11px; color: #94a3b8;">10:15</span>
+                              </div>
+                              <div
+                                 style="font-size: 13px; color: #64748b; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">
+                                 Chào bác sĩ, tôi muốn hỏi về đơn thuốc...</div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+
+                  <!-- Chat Window -->
+                  <div class="chat-container" style="height: auto; max-width: none; border-radius: 0; border: none;">
+                     <div
+                        style="padding: 16px 24px; border-bottom: 1px solid #e2e8f0; background: white; display: flex; justify-content: space-between; align-items: center;">
+                        <div class="flex items-center gap-3">
+                           <img src="https://i.pravatar.cc/150?u=p1"
+                              style="width: 36px; height: 36px; border-radius: 50%;">
+                           <div>
+                              <div style="font-weight: 700;">Nguyễn Thị Mai</div>
+                              <div style="font-size: 12px; color: #16a34a; font-weight: 600;">Đang hoạt động</div>
+                           </div>
+                        </div>
+                        <div class="flex gap-4">
+                           <i data-lucide="phone" class="icon-btn"></i>
+                           <i data-lucide="video" class="icon-btn"></i>
+                           <i data-lucide="more-horizontal" class="icon-btn"></i>
+                        </div>
+                     </div>
+                     <div class="chat-messages" id="chat-messages" style="background: #f8fafc; padding: 24px;">
+                        <div class="msg-row bot">
+                           <div class="msg-avatar" style="background: #e2e8f0;"><i data-lucide="user"></i></div>
+                           <div>
+                              <div class="msg-bubble"
+                                 style="background: white; border: 1px solid #e2e8f0; color: #1e293b;">
+                                 <strong>Bệnh nhân Nguyễn Thị Mai:</strong><br>
+                                 Chào bác sĩ, tôi vừa nhận được kết quả xét nghiệm máu. Chỉ số đường huyết của tôi có vẻ
+                                 hơi cao, bác sĩ xem giúp tôi với ạ.
+                              </div>
+                           </div>
+                        </div>
+                        <div class="msg-row user">
+                           <div class="msg-bubble">Chào Mai, tôi đã xem kết quả của bạn. Chỉ số đường huyết lúc đói là
+                              7.2, hơi cao một chút so với mức bình thường. Bạn có đang duy trì chế độ ăn kiêng không?
+                           </div>
+                        </div>
+                     </div>
+
+                     <div class="chat-input-area"
+                        style="padding: 20px 24px; background: white; border-top: 1px solid #e2e8f0;">
+                        <div class="chat-input-wrapper">
+                           <i data-lucide="paperclip" class="icon-btn"></i>
+                           <input type="text" placeholder="Gửi tư vấn cho bệnh nhân..." id="chatInput"
+                              onkeypress="if(event.key === 'Enter') sendMsg()">
+                           <button class="chat-input-btn" onclick="sendMsg()">
+                              <i data-lucide="send"></i>
+                           </button>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+            <!-- PAGE: RECORDS -->
+            <div id="page-records" class="page">
+               <div class="page-container">
+                  <h2 class="page-title">Hệ thống bệnh án điện tử</h2>
+                  <p class="page-subtitle">Quản lý và truy xuất lịch sử y tế của bệnh nhân.</p>
+
+                  <div class="card" style="margin-top: 24px; margin-bottom: 24px;">
+                     <div class="flex gap-4 items-center">
+                        <i data-lucide="search" class="text-muted"></i>
+                        <input type="text" placeholder="Nhập tên hoặc mã số bệnh nhân để tìm bệnh án..."
+                           style="flex: 1; border: none; outline: none; font-size: 16px;">
+                        <button class="btn btn-primary">Tìm kiếm</button>
+                     </div>
+                  </div>
+
+                  <div class="flex gap-2 mb-6">
+                     <button class="badge badge-cyan" style="padding: 8px 16px; border: none; cursor: pointer;">Tất cả
+                        hồ sơ</button>
+                     <button class="badge badge-gray" style="padding: 8px 16px; border: none; cursor: pointer;">Đang
+                        điều trị</button>
+                     <button class="badge badge-gray" style="padding: 8px 16px; border: none; cursor: pointer;">Đã hoàn
+                        thành</button>
+                     <button class="badge badge-gray" style="padding: 8px 16px; border: none; cursor: pointer;">Khẩn
+                        cấp</button>
+                  </div>
+
+                  <div class="card" style="padding: 0; overflow: hidden;">
+                     <table style="width: 100%; border-collapse: collapse;">
+                        <thead style="background: #f8fafc;">
+                           <tr
+                              style="text-align: left; color: #64748b; font-size: 13px; border-bottom: 1px solid #e2e8f0;">
+                              <th style="padding: 16px;">MÃ BỆNH ÁN</th>
+                              <th>BỆNH NHÂN</th>
+                              <th>CHẨN ĐOÁN CHÍNH</th>
+                              <th>NGÀY CẬP NHẬT</th>
+                              <th>THAO TÁC</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                           <tr style="border-bottom: 1px solid #f1f5f9;">
+                              <td style="padding: 16px; font-weight: 600;">#HS-2026-001</td>
+                              <td>
+                                 <div class="flex items-center gap-3">
+                                    <img src="https://i.pravatar.cc/150?u=p1"
+                                       style="width: 32px; height: 32px; border-radius: 50%;">
+                                    <div style="font-weight: 700;">Nguyễn Thị Mai</div>
+                                 </div>
+                              </td>
+                              <td>Viêm họng cấp / Theo dõi đường huyết</td>
+                              <td>14/05/2026</td>
+                              <td>
+                                 <div class="flex gap-2">
+                                    <button class="btn btn-outline btn-compact" title="Xem chi tiết"><i
+                                          data-lucide="eye" style="width: 16px;"></i></button>
+                                    <button class="btn btn-outline btn-compact" title="Tải hồ sơ PDF"><i
+                                          data-lucide="download" style="width: 16px;"></i></button>
+                                 </div>
+                              </td>
+                           </tr>
+                           <tr style="border-bottom: 1px solid #f1f5f9;">
+                              <td style="padding: 16px; font-weight: 600;">#HS-2026-002</td>
+                              <td>
+                                 <div class="flex items-center gap-3">
+                                    <img src="https://i.pravatar.cc/150?u=p2"
+                                       style="width: 32px; height: 32px; border-radius: 50%;">
+                                    <div style="font-weight: 700;">Trần Văn B</div>
+                                 </div>
+                              </td>
+                              <td>Tăng huyết áp vô căn / Rối loạn lipid máu</td>
+                              <td>12/05/2026</td>
+                              <td>
+                                 <div class="flex gap-2">
+                                    <button class="btn btn-outline btn-compact"><i data-lucide="eye"
+                                          style="width: 16px;"></i></button>
+                                    <button class="btn btn-outline btn-compact"><i data-lucide="download"
+                                          style="width: 16px;"></i></button>
+                                 </div>
+                              </td>
+                           </tr>
+                           <tr>
+                              <td style="padding: 16px; font-weight: 600;">#HS-2026-045</td>
+                              <td>
+                                 <div class="flex items-center gap-3">
+                                    <img src="https://i.pravatar.cc/150?u=p3"
+                                       style="width: 32px; height: 32px; border-radius: 50%;">
+                                    <div style="font-weight: 700;">Lê Hoàng Nam</div>
+                                 </div>
+                              </td>
+                              <td>Phục hồi chức năng sau mổ dây chằng</td>
+                              <td>10/05/2026</td>
+                              <td>
+                                 <div class="flex gap-2">
+                                    <button class="btn btn-outline btn-compact"><i data-lucide="eye"
+                                          style="width: 16px;"></i></button>
+                                    <button class="btn btn-outline btn-compact"><i data-lucide="download"
+                                          style="width: 16px;"></i></button>
+                                 </div>
+                              </td>
+                           </tr>
+                        </tbody>
+                     </table>
+                  </div>
+               </div>
+            </div>
+
+         </div>
+      </main>
+   </div>
+
+   <script>
+      lucide.createIcons();
+
+      const pageTitles = {
+         'home': 'Tổng quan',
+         'appointments': 'Lịch hẹn khám',
+         'patients': 'Bệnh nhân của tôi',
+         'chat': 'Tư vấn trực tuyến',
+         'records': 'Hồ sơ bệnh án'
+      };
+
+      function switchPage(pageId, navElement) {
+         document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+         document.getElementById('page-' + pageId).classList.add('active');
+
+         document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('active');
+         });
+         navElement.classList.add('active');
+
+         document.getElementById('header-title').innerText = pageTitles[pageId];
+      }
+
+      function sendMsg() {
+         const input = document.getElementById('chatInput');
+         const text = input.value.trim();
+         if (!text) return;
+
+         const chatContainer = document.getElementById('chat-messages');
+         const userRow = document.createElement('div');
+         userRow.className = 'msg-row user';
+         userRow.innerHTML = `<div class="msg-bubble">${text}</div>`;
+         chatContainer.appendChild(userRow);
+
+         input.value = '';
+         chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
+   </script>
+
+</body>
+
+</html>

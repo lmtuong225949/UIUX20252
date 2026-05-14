@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FamilyDoc - Quản lý bệnh viện</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .stat-card-admin {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .stat-card-admin .value {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .stat-card-admin .label {
+      font-size: 13px;
+      color: #64748b;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .trend-up {
+      color: #16a34a;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .trend-down {
+      color: #dc2626;
+      font-size: 12px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="app-container">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <i data-lucide="building-2"></i>
+        <span>FamilyDoc <small style="font-size: 10px; opacity: 0.7;">ADMIN</small></span>
+      </div>
+
+      <div class="user-profile">
+        <img src="https://i.pravatar.cc/150?u=admin" alt="Admin Avatar">
+        <div>
+          <div class="user-name">Phạm Hoàng Nam</div>
+          <div class="user-role">Giám đốc điều hành</div>
+        </div>
+      </div>
+
+      <ul class="nav-menu">
+        <li class="nav-item active" onclick="switchPage('overview', this)">
+          <i data-lucide="pie-chart"></i> Tổng quan hệ thống
+        </li>
+        <li class="nav-item" onclick="switchPage('staff', this)">
+          <i data-lucide="users"></i> Quản lý nhân sự
+        </li>
+        <li class="nav-item" onclick="switchPage('departments', this)">
+          <i data-lucide="layout-grid"></i> Khoa & Phòng ban
+        </li>
+        <li class="nav-item" onclick="switchPage('finance', this)">
+          <i data-lucide="wallet"></i> Báo cáo tài chính
+        </li>
+        <li class="nav-item" onclick="switchPage('settings', this)">
+          <i data-lucide="shield-check"></i> Bảo mật & Hệ thống
+        </li>
+      </ul>
+
+      <ul class="nav-menu nav-bottom">
+        <li class="nav-item"><i data-lucide="help-circle"></i> Trợ giúp</li>
+        <li class="nav-item"><i data-lucide="log-out"></i> Đăng xuất</li>
+      </ul>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+      <header class="top-header">
+        <h1 class="header-title" id="header-title">Tổng quan hệ thống</h1>
+        <div class="header-actions">
+          <div
+            style="display: flex; align-items: center; gap: 12px; background: #f1f5f9; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; color: #475569;">
+            <i data-lucide="calendar" style="width: 16px;"></i>
+            Tháng 5, 2026
+          </div>
+          <i data-lucide="bell" class="icon-btn"></i>
+          <i data-lucide="settings" class="icon-btn"></i>
+        </div>
+      </header>
+
+      <div class="content-area">
+
+        <!-- PAGE: OVERVIEW -->
+        <div id="page-overview" class="page active">
+          <div class="grid-2" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 32px;">
+            <div class="card card-primary stat-card-admin">
+              <span class="label">Tổng bệnh nhân</span>
+              <span class="value">12,840</span>
+              <span class="trend-up"><i data-lucide="trending-up" style="width: 12px; display: inline;"></i> 12% so với
+                tháng trước</span>
+            </div>
+            <div class="card card-teal stat-card-admin">
+              <span class="label">Doanh thu (VND)</span>
+              <span class="value">2.45B</span>
+              <span class="trend-up"><i data-lucide="trending-up" style="width: 12px; display: inline;"></i> 8% mục
+                tiêu</span>
+            </div>
+            <div class="card card-light stat-card-admin">
+              <span class="label">Tỷ lệ lấp đầy giường</span>
+              <span class="value">85%</span>
+              <span class="trend-down"><i data-lucide="trending-down" style="width: 12px; display: inline;"></i> 2% (Ổn
+                định)</span>
+            </div>
+            <div class="card card-light stat-card-admin">
+              <span class="label">Bác sĩ đang trực</span>
+              <span class="value">42</span>
+              <span class="label" style="text-transform: none; margin-top: 4px;">/ 50 Tổng số</span>
+            </div>
+          </div>
+
+          <div class="grid-2" style="grid-template-columns: 2fr 1fr;">
+            <!-- Chart Placeholder -->
+            <div class="card">
+              <div class="flex justify-between items-center mb-6">
+                <h3 class="card-title" style="margin-bottom: 0;">Lượt khám theo tuần</h3>
+                <div class="flex gap-2">
+                  <button class="btn btn-outline btn-compact">Tuần</button>
+                  <button class="btn btn-secondary btn-compact">Tháng</button>
+                </div>
+              </div>
+              <div style="height: 300px; position: relative;">
+                <canvas id="examChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="card">
+              <h3 class="card-title">Hoạt động gần đây</h3>
+              <div style="display: flex; flex-direction: column; gap: 16px;">
+                <div class="flex gap-3">
+                  <div style="width: 8px; height: 8px; border-radius: 50%; background: #0b57d0; margin-top: 6px;"></div>
+                  <div>
+                    <div style="font-size: 14px; font-weight: 700;">BS. Nguyễn Văn A vừa bắt đầu ca trực</div>
+                    <div style="font-size: 12px; color: #64748b;">Khoa Nội | 2 phút trước</div>
+                  </div>
+                </div>
+                <div class="flex gap-3">
+                  <div style="width: 8px; height: 8px; border-radius: 50%; background: #16a34a; margin-top: 6px;"></div>
+                  <div>
+                    <div style="font-size: 14px; font-weight: 700;">Nhập kho dược phẩm mới</div>
+                    <div style="font-size: 12px; color: #64748b;">Khoa Dược | 15 phút trước</div>
+                  </div>
+                </div>
+                <div class="flex gap-3">
+                  <div style="width: 8px; height: 8px; border-radius: 50%; background: #ef4444; margin-top: 6px;"></div>
+                  <div>
+                    <div style="font-size: 14px; font-weight: 700;">Cảnh báo hệ thống máy chủ</div>
+                    <div style="font-size: 12px; color: #64748b;">IT Dept | 1 giờ trước</div>
+                  </div>
+                </div>
+              </div>
+              <button class="btn btn-outline" style="width: 100%; margin-top: 24px;">Xem tất cả nhật ký</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- PAGE: STAFF -->
+        <div id="page-staff" class="page">
+          <div class="page-container">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="page-title">Quản lý đội ngũ bác sĩ</h2>
+              <button class="btn btn-primary btn-rounded"><i data-lucide="plus"></i> Thêm nhân sự</button>
+            </div>
+            <table
+              style="width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+              <thead style="background: #f8fafc;">
+                <tr style="text-align: left; color: #64748b; font-size: 13px; border-bottom: 1px solid #e2e8f0;">
+                  <th style="padding: 16px;">NHÂN VIÊN</th>
+                  <th>CHUYÊN KHOA</th>
+                  <th>TRẠNG THÁI</th>
+                  <th>HIỆU SUẤT</th>
+                  <th>THAO TÁC</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom: 1px solid #f1f5f9;">
+                  <td style="padding: 16px;">
+                    <div class="flex items-center gap-3">
+                      <img src="https://i.pravatar.cc/150?u=doc1"
+                        style="width: 40px; height: 40px; border-radius: 50%;">
+                      <div>
+                        <div style="font-weight: 700;">BS. Trần Văn A</div>
+                        <div style="font-size: 12px; color: #64748b;">MaNV: DT-001</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>Khoa Nội</td>
+                  <td><span class="badge badge-green">Đang trực</span></td>
+                  <td>
+                    <div style="width: 100px; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
+                      <div style="width: 90%; height: 100%; background: #0b57d0;"></div>
+                    </div>
+                    <div style="font-size: 11px; margin-top: 4px;">90% Sự hài lòng</div>
+                  </td>
+                  <td><i data-lucide="more-vertical" class="icon-btn"></i></td>
+                </tr>
+                <tr>
+                  <td style="padding: 16px;">
+                    <div class="flex items-center gap-3">
+                      <img src="https://i.pravatar.cc/150?u=doc2"
+                        style="width: 40px; height: 40px; border-radius: 50%;">
+                      <div>
+                        <div style="font-weight: 700;">BS. Trần Thị B</div>
+                        <div style="font-size: 12px; color: #64748b;">MaNV: DT-002</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>Nhi khoa</td>
+                  <td><span class="badge badge-gray">Nghỉ phép</span></td>
+                  <td>
+                    <div style="width: 100px; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
+                      <div style="width: 85%; height: 100%; background: #0b57d0;"></div>
+                    </div>
+                    <div style="font-size: 11px; margin-top: 4px;">85% Sự hài lòng</div>
+                  </td>
+                  <td><i data-lucide="more-vertical" class="icon-btn"></i></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- PAGE: DEPARTMENTS -->
+        <div id="page-departments" class="page">
+          <div class="page-container">
+            <h2 class="page-title">Khoa & Phòng ban</h2>
+            <div class="grid-2" style="grid-template-columns: repeat(3, 1fr);">
+              <div class="card">
+                <div class="flex items-center gap-4 mb-4">
+                  <div style="padding: 12px; background: #fee2e2; color: #dc2626; border-radius: 12px;">
+                    <i data-lucide="heart"></i>
+                  </div>
+                  <div>
+                    <h3 style="font-weight: 700;">Khoa Tim mạch</h3>
+                    <div style="font-size: 12px; color: #64748b;">Trưởng khoa: BS. Lê Văn C</div>
+                  </div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  <div class="flex justify-between text-sm">
+                    <span class="text-muted">Bác sĩ:</span>
+                    <span style="font-weight: 600;">12</span>
+                  </div>
+                  <div class="flex justify-between text-sm">
+                    <span class="text-muted">Bệnh nhân nội trú:</span>
+                    <span style="font-weight: 600;">45/50</span>
+                  </div>
+                  <div
+                    style="width: 100%; height: 6px; background: #f1f5f9; border-radius: 3px; overflow: hidden; margin-top: 4px;">
+                    <div style="width: 90%; height: 100%; background: #dc2626;"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="flex items-center gap-4 mb-4">
+                  <div style="padding: 12px; background: #e0f2fe; color: #0284c7; border-radius: 12px;">
+                    <i data-lucide="baby"></i>
+                  </div>
+                  <div>
+                    <h3 style="font-weight: 700;">Khoa Nhi</h3>
+                    <div style="font-size: 12px; color: #64748b;">Trưởng khoa: BS. Trần Thị B</div>
+                  </div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  <div class="flex justify-between text-sm">
+                    <span class="text-muted">Bác sĩ:</span>
+                    <span style="font-weight: 600;">18</span>
+                  </div>
+                  <div class="flex justify-between text-sm">
+                    <span class="text-muted">Bệnh nhân nội trú:</span>
+                    <span style="font-weight: 600;">28/40</span>
+                  </div>
+                  <div
+                    style="width: 100%; height: 6px; background: #f1f5f9; border-radius: 3px; overflow: hidden; margin-top: 4px;">
+                    <div style="width: 70%; height: 100%; background: #0284c7;"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="flex items-center gap-4 mb-4">
+                  <div style="padding: 12px; background: #dcfce3; color: #16a34a; border-radius: 12px;">
+                    <i data-lucide="flask-conical"></i>
+                  </div>
+                  <div>
+                    <h3 style="font-weight: 700;">Khoa Xét nghiệm</h3>
+                    <div style="font-size: 12px; color: #64748b;">Trưởng khoa: BS. Phạm Nam</div>
+                  </div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  <div class="flex justify-between text-sm">
+                    <span class="text-muted">Nhân sự:</span>
+                    <span style="font-weight: 600;">24</span>
+                  </div>
+                  <div class="flex justify-between text-sm">
+                    <span class="text-muted">Mẫu chờ xử lý:</span>
+                    <span style="font-weight: 600;">120</span>
+                  </div>
+                  <div
+                    style="width: 100%; height: 6px; background: #f1f5f9; border-radius: 3px; overflow: hidden; margin-top: 4px;">
+                    <div style="width: 50%; height: 100%; background: #16a34a;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PAGE: FINANCE -->
+        <div id="page-finance" class="page">
+          <div class="page-container">
+            <h2 class="page-title">Báo cáo tài chính</h2>
+            <div class="grid-2" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 32px;">
+              <div class="card">
+                <div class="text-muted text-sm font-bold mb-2">TỔNG THU (THÁNG NÀY)</div>
+                <div style="font-size: 24px; font-weight: 700;">1.280.000.000 VNĐ</div>
+                <div class="trend-up" style="margin-top: 4px;">+15% so với tháng trước</div>
+              </div>
+              <div class="card">
+                <div class="text-muted text-sm font-bold mb-2">CHI PHÍ VẬN HÀNH</div>
+                <div style="font-size: 24px; font-weight: 700;">850.000.000 VNĐ</div>
+                <div class="trend-down" style="margin-top: 4px;">-5% tiết kiệm</div>
+              </div>
+              <div class="card">
+                <div class="text-muted text-sm font-bold mb-2">LỢI NHUẬN RÒNG</div>
+                <div style="font-size: 24px; font-weight: 700;">430.000.000 VNĐ</div>
+                <div class="trend-up" style="margin-top: 4px;">+20% tăng trưởng</div>
+              </div>
+            </div>
+
+            <div class="card">
+              <h3 class="card-title">Giao dịch gần đây</h3>
+              <table style="width: 100%; border-collapse: collapse;">
+                <thead style="background: #f8fafc;">
+                  <tr style="text-align: left; color: #64748b; font-size: 13px;">
+                    <th style="padding: 12px;">MÃ GD</th>
+                    <th>NỘI DUNG</th>
+                    <th>LOẠI</th>
+                    <th>SỐ TIỀN</th>
+                    <th>TRẠNG THÁI</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style="border-bottom: 1px solid #f1f5f9;">
+                    <td style="padding: 12px;">#TRX-9921</td>
+                    <td>Thanh toán vật tư y tế tháng 5</td>
+                    <td>Chi phí</td>
+                    <td style="font-weight: 700; color: #ef4444;">-120.000.000</td>
+                    <td><span class="badge badge-green">Thành công</span></td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 12px;">#TRX-9922</td>
+                    <td>Viện phí bệnh nhân BN-001</td>
+                    <td>Thu nhập</td>
+                    <td style="font-weight: 700; color: #16a34a;">+15.000.000</td>
+                    <td><span class="badge badge-green">Thành công</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- PAGE: SETTINGS -->
+        <div id="page-settings" class="page">
+          <div class="page-container">
+            <h2 class="page-title">Bảo mật & Hệ thống</h2>
+            <div class="grid-2">
+              <div class="card">
+                <h3 class="card-title"><i data-lucide="server" style="width: 18px; vertical-align: middle;"></i> Trạng
+                  thái hệ thống</h3>
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                  <div class="flex justify-between items-center">
+                    <span>Máy chủ trung tâm</span>
+                    <span class="badge badge-green">Hoạt động</span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span>Cơ sở dữ liệu</span>
+                    <span class="badge badge-green">Hoạt động</span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span>Sao lưu định kỳ (Cloud)</span>
+                    <span style="color: #64748b; font-size: 13px;">Hôm nay, 02:00 AM</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card">
+                <h3 class="card-title"><i data-lucide="lock" style="width: 18px; vertical-align: middle;"></i> Cài đặt
+                  bảo mật</h3>
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                  <div class="flex justify-between items-center">
+                    <span>Xác thực 2 lớp (2FA)</span>
+                    <label style="position: relative; display: inline-block; width: 40px; height: 20px;">
+                      <input type="checkbox" checked style="opacity: 0; width: 0; height: 0;">
+                      <span
+                        style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #0b57d0; transition: .4s; border-radius: 20px;"></span>
+                    </label>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span>Mã hóa dữ liệu bệnh nhân</span>
+                    <span class="badge badge-cyan">AES-256</span>
+                  </div>
+                  <button class="btn btn-outline" style="width: 100%;">Xem nhật ký truy cập (Access Logs)</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    const pageTitles = {
+      'overview': 'Tổng quan hệ thống',
+      'staff': 'Quản lý nhân sự',
+      'departments': 'Khoa & Phòng ban',
+      'finance': 'Báo cáo tài chính',
+      'settings': 'Cài đặt hệ thống'
+    };
+
+    function switchPage(pageId, navElement) {
+      document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+      document.getElementById('page-' + pageId).classList.add('active');
+
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      navElement.classList.add('active');
+
+      document.getElementById('header-title').innerText = pageTitles[pageId];
+    }
+
+    // Initialize Chart
+    const ctx = document.getElementById('examChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ Nhật'],
+        datasets: [{
+          label: 'Lượt khám',
+          data: [120, 150, 180, 140, 210, 250, 190],
+          borderColor: '#2563eb',
+          backgroundColor: 'rgba(37, 99, 235, 0.1)',
+          borderWidth: 3,
+          fill: true,
+          tension: 0.4,
+          pointRadius: 4,
+          pointBackgroundColor: '#fff',
+          pointBorderColor: '#2563eb',
+          pointBorderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: { color: '#f1f5f9' },
+            ticks: { color: '#64748b', font: { family: 'Inter' } }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { color: '#64748b', font: { family: 'Inter' } }
+          }
+        }
+      }
+    });
+  </script>
+
+</body>
+
+</html>
