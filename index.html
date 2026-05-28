@@ -1,13 +1,501 @@
 <!doctype html>
-<html lang="en">
+<html lang="vi">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>familydoc</title>
+    <title>FamilyDoc - Cổng chọn vai trò</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+      :root {
+        --bg-color: #0b0f19;
+        --card-bg: rgba(255, 255, 255, 0.03);
+        --card-border: rgba(255, 255, 255, 0.08);
+        --card-border-hover: rgba(255, 255, 255, 0.2);
+        --text-main: #f8fafc;
+        --text-muted: #94a3b8;
+        --font-outfit: 'Outfit', sans-serif;
+        --font-inter: 'Inter', sans-serif;
+        --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        
+        /* Accents */
+        --accent-patient: #3b82f6;
+        --accent-patient-rgb: 59, 130, 246;
+        --accent-doctor: #0d9488;
+        --accent-doctor-rgb: 13, 148, 136;
+        --accent-expert: #d97706;
+        --accent-expert-rgb: 217, 119, 6;
+        --accent-admin: #6366f1;
+        --accent-admin-rgb: 99, 102, 241;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: var(--font-inter);
+        background-color: var(--bg-color);
+        color: var(--text-main);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        overflow-x: hidden;
+        position: relative;
+      }
+
+      /* Glowing background blur blobs */
+      .glow-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        pointer-events: none;
+        overflow: hidden;
+      }
+
+      .glow-blob-1 {
+        position: absolute;
+        top: -10%;
+        left: 10%;
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, rgba(0, 0, 0, 0) 70%);
+        filter: blur(80px);
+        animation: float 12s infinite alternate;
+      }
+
+      .glow-blob-2 {
+        position: absolute;
+        bottom: 10%;
+        right: 10%;
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
+        filter: blur(100px);
+        animation: float 16s infinite alternate-reverse;
+      }
+
+      @keyframes float {
+        0% { transform: translate(0, 0) scale(1); }
+        100% { transform: translate(50px, 30px) scale(1.1); }
+      }
+
+      /* Main container */
+      .portal-container {
+        max-width: 1280px;
+        width: 100%;
+        margin: 0 auto;
+        padding: 48px 24px;
+        z-index: 1;
+        position: relative;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
+      /* Header */
+      .portal-header {
+        text-align: center;
+        margin-bottom: 56px;
+        max-width: 700px;
+      }
+
+      .logo-area {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 24px;
+        padding: 8px 18px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 30px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      }
+
+      .logo-icon {
+        color: var(--accent-patient);
+        animation: pulse-glow 2s infinite ease-in-out;
+      }
+
+      @keyframes pulse-glow {
+        0%, 100% { transform: scale(1); opacity: 0.9; }
+        50% { transform: scale(1.08); opacity: 1; filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.6)); }
+      }
+
+      .logo-text {
+        font-family: var(--font-outfit);
+        font-weight: 800;
+        font-size: 20px;
+        letter-spacing: 0.5px;
+        background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .portal-title {
+        font-family: var(--font-outfit);
+        font-weight: 800;
+        font-size: 42px;
+        line-height: 1.2;
+        margin-bottom: 16px;
+        background: linear-gradient(to right, #ffffff, #e2e8f0, #94a3b8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -0.5px;
+      }
+
+      .portal-desc {
+        color: var(--text-muted);
+        font-size: 16px;
+        line-height: 1.6;
+      }
+
+      /* Grid System */
+      .roles-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 28px;
+        width: 100%;
+        margin-bottom: 24px;
+      }
+
+      @media (max-width: 1024px) {
+        .roles-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      @media (max-width: 640px) {
+        .roles-grid {
+          grid-template-columns: 1fr;
+        }
+        .portal-title {
+          font-size: 32px;
+        }
+      }
+
+      /* Role Cards */
+      .role-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 24px;
+        padding: 32px;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+        transition: var(--transition);
+      }
+
+      .role-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: var(--accent);
+        opacity: 0.3;
+        transition: var(--transition);
+      }
+
+      .role-card:hover {
+        transform: translateY(-8px);
+        background: rgba(255, 255, 255, 0.05);
+        border-color: var(--accent);
+        box-shadow: 0 20px 40px -15px rgba(var(--accent-rgb), 0.25);
+      }
+
+      .role-card:hover::before {
+        opacity: 1;
+        height: 6px;
+      }
+
+      .card-top {
+        margin-bottom: 32px;
+      }
+
+      /* Icon Circle */
+      .icon-circle {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 24px;
+        color: var(--accent);
+        transition: var(--transition);
+      }
+
+      .role-card:hover .icon-circle {
+        background: var(--accent);
+        color: #fff;
+        transform: scale(1.05) rotate(5deg);
+        box-shadow: 0 8px 20px rgba(var(--accent-rgb), 0.4);
+      }
+
+      .role-name {
+        font-family: var(--font-outfit);
+        font-weight: 700;
+        font-size: 22px;
+        margin-bottom: 12px;
+        color: var(--text-main);
+        transition: var(--transition);
+      }
+
+      .role-card:hover .role-name {
+        color: #fff;
+      }
+
+      .role-tagline {
+        font-size: 14px;
+        color: var(--text-muted);
+        line-height: 1.5;
+        margin-bottom: 20px;
+        min-height: 42px;
+      }
+
+      /* Features Checklist */
+      .features-list {
+        list-style: none;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        padding-top: 20px;
+      }
+
+      .feature-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13.5px;
+        color: var(--text-muted);
+        margin-bottom: 10px;
+      }
+
+      .feature-item i {
+        color: var(--accent);
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
+      }
+
+      /* Action Button */
+      .action-btn {
+        width: 100%;
+        margin-top: 32px;
+        padding: 14px;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        background: rgba(255, 255, 255, 0.02);
+        color: var(--text-main);
+        font-weight: 600;
+        font-size: 14.5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: var(--transition);
+      }
+
+      .action-btn i {
+        width: 16px;
+        height: 16px;
+        transition: var(--transition);
+      }
+
+      .role-card:hover .action-btn {
+        background: var(--accent);
+        color: #fff;
+        border-color: transparent;
+        box-shadow: 0 8px 16px rgba(var(--accent-rgb), 0.2);
+      }
+
+      .role-card:hover .action-btn i {
+        transform: translateX(4px);
+      }
+
+      /* Footer */
+      .portal-footer {
+        text-align: center;
+        padding: 24px;
+        border-top: 1px solid rgba(255, 255, 255, 0.03);
+        font-size: 13px;
+        color: #475569;
+        z-index: 1;
+        position: relative;
+        width: 100%;
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+    <!-- Radial glows -->
+    <div class="glow-bg">
+      <div class="glow-blob-1"></div>
+      <div class="glow-blob-2"></div>
+    </div>
+
+    <!-- Container -->
+    <div class="portal-container">
+      
+      <!-- Brand Header -->
+      <header class="portal-header">
+        <div class="logo-area">
+          <i data-lucide="shield-plus" class="logo-icon" style="width: 22px; height: 22px;"></i>
+          <span class="logo-text">FamilyDoc</span>
+        </div>
+        <h1 class="portal-title">Hệ thống Y tế Gia đình</h1>
+        <p class="portal-desc">Chào mừng bạn đến với cổng thông tin y tế FamilyDoc. Vui lòng lựa chọn đúng vai trò của bạn để truy cập hệ thống phù hợp.</p>
+      </header>
+
+      <!-- Roles Grid -->
+      <div class="roles-grid">
+        
+        <!-- CARD: PATIENT -->
+        <div class="role-card" style="--accent: var(--accent-patient); --accent-rgb: var(--accent-patient-rgb);" onclick="window.location.href='patient_app.html'">
+          <div class="card-top">
+            <div class="icon-circle">
+              <i data-lucide="user" style="width: 24px; height: 24px;"></i>
+            </div>
+            <h2 class="role-name">Bệnh nhân</h2>
+            <p class="role-tagline">Quản lý và chăm sóc sức khỏe cho chính bản thân và gia đình.</p>
+            <ul class="features-list">
+              <li class="feature-item">
+                <i data-lucide="check" style="width: 14px; height: 14px;"></i>
+                <span>Tư vấn triệu chứng AI</span>
+              </li>
+              <li class="feature-item">
+                <i data-lucide="check" style="width: 14px; height: 14px;"></i>
+                <span>Đặt lịch khám trực tuyến</span>
+              </li>
+              <li class="feature-item">
+                <i data-lucide="check" style="width: 14px; height: 14px;"></i>
+                <span>Xem hồ sơ sức khỏe & thuốc</span>
+              </li>
+            </ul>
+          </div>
+          <button class="action-btn">
+            Truy cập
+            <i data-lucide="arrow-right"></i>
+          </button>
+        </div>
+
+        <!-- CARD: DOCTOR -->
+        <div class="role-card" style="--accent: var(--accent-doctor); --accent-rgb: var(--accent-doctor-rgb);" onclick="window.location.href='doctor_app.html'">
+          <div class="card-top">
+            <div class="icon-circle">
+              <i data-lucide="heart-pulse" style="width: 24px; height: 24px;"></i>
+            </div>
+            <h2 class="role-name">Bác sĩ</h2>
+            <p class="role-tagline">Tiếp nhận thông tin bệnh nhân và thực hiện tư vấn trực tuyến.</p>
+            <ul class="features-list">
+              <li class="feature-item">
+                <i data-lucide="check" style="width: 14px; height: 14px;"></i>
+                <span>Quản lý lịch khám bệnh</span>
+              </li>
+              <li class="feature-item">
+                <i data-lucide="check" style="width: 14px; height: 14px;"></i>
+                <span>Nhắn tin tư vấn trực tiếp</span>
+              </li>
+              <li class="feature-item">
+                <i data-lucide="check" style="width: 14px; height: 14px;"></i>
+                <span>Quản lý hồ sơ bệnh án</span>
+              </li>
+            </ul>
+          </div>
+          <button class="action-btn">
+            Truy cập
+            <i data-lucide="arrow-right"></i>
+          </button>
+        </div>
+
+        <!-- CARD: EXPERT -->
+        <div class="role-card" style="--accent: var(--accent-expert); --accent-rgb: var(--accent-expert-rgb);" onclick="window.location.href='expert_app.html'">
+          <div class="card-top">
+            <div class="icon-circle">
+              <i data-lucide="award" style="width: 24px; height: 24px;"></i>
+            </div>
+            <h2 class="role-name">Chuyên gia</h2>
+            <p class="role-tagline">Giám sát chất lượng y tế và phân tích vận hành hệ thống.</p>
+            <ul class="features-list">
+              <li class="feature-item">
+                <i data-lucide="check" style="width: 14px; height: 14px;"></i>
+                <span>Giám sát phiên tư vấn</span>
+              </li>
+              <li class="feature-item">
+                <i data-lucide="check" style="width: 14px; height: 14px;"></i>
+                <span>Phân tích hiệu suất hệ thống</span>
+              </li>
+              <li class="feature-item">
+                <i data-lucide="check" style="width: 14px; height: 14px;"></i>
+                <span>Quản lý thư viện y khoa</span>
+              </li>
+            </ul>
+          </div>
+          <button class="action-btn">
+            Truy cập
+            <i data-lucide="arrow-right"></i>
+          </button>
+        </div>
+
+        <!-- CARD: ADMIN -->
+        <div class="role-card" style="--accent: var(--accent-admin); --accent-rgb: var(--accent-admin-rgb);" onclick="window.location.href='admin_app.html'">
+          <div class="card-top">
+            <div class="icon-circle">
+              <i data-lucide="building-2" style="width: 24px; height: 24px;"></i>
+            </div>
+            <h2 class="role-name">Quản trị viên</h2>
+            <p class="role-tagline">Điều hành nhân sự, khoa phòng ban và thiết lập bảo mật.</p>
+            <ul class="features-list">
+              <li class="feature-item">
+                <i data-lucide="check" style="width: 14px; height: 14px;"></i>
+                <span>Quản lý nhân sự y tế</span>
+              </li>
+              <li class="feature-item">
+                <i data-lucide="check" style="width: 14px; height: 14px;"></i>
+                <span>Báo cáo tài chính & phòng ban</span>
+              </li>
+              <li class="feature-item">
+                <i data-lucide="check" style="width: 14px; height: 14px;"></i>
+                <span>Cấu hình & Bảo mật hệ thống</span>
+              </li>
+            </ul>
+          </div>
+          <button class="action-btn">
+            Truy cập
+            <i data-lucide="arrow-right"></i>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="portal-footer">
+      Hệ thống quản lý y tế thông minh FamilyDoc &copy; 2026. Mọi quyền được bảo lưu.
+    </footer>
+
+    <!-- Initialize Lucide Icons -->
+    <script>
+      lucide.createIcons();
+    </script>
   </body>
 </html>
